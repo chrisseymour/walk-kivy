@@ -23,8 +23,8 @@ from kivy.clock import Clock
 
 #set Window.size
 from kivy.config import Config
-#Config.set('graphics', 'width', '360')
-#Config.set('graphics', 'heigt', '540')
+Config.set('graphics', 'width', '340')
+Config.set('graphics', 'heigt', '500')
 Config.set('graphics', 'position', 'custom')
 Config.set('graphics', 'left', '300')
 Config.set('graphics', 'top', '300')
@@ -82,7 +82,7 @@ class Background(Widget):
 
     def scroll(self, ihat):
         #scroll right
-        amnt = 2.5
+        amnt = 1.0
         if ihat > 0:
             self.image.x -= amnt * props.scale
             self.image2.x -= amnt * props.scale
@@ -108,7 +108,7 @@ class Man(Sprite):
         #self.images = SpriteAtlas('images/man.atlas')
         self.images = Atlas('images/man.atlas')
         w, h = pos[0]-self.images['man-stop'].width/2, pos[1]-self.images['man-stop'].height/2
-        #w, h = self.width/2, self.height/2
+        w, h = self.width/2, self.height/2
         print('man init', pos, w, h)
         #w, h, = pos[0]-w/2, pos[1]-h/2
         print('man init',pos, w, h)
@@ -220,6 +220,7 @@ class Game(Widget):
         #self.add_widget(self.quit_to_menu)
         #self.quit_to_menu.bind( on_press=self._on_quit )
         ww, wh = Window.size
+        ww, wh = self.size
         print('window size',ww, wh)
         xx, yy = (self.width, self.height)
         print('xx yy',xx, yy)
@@ -303,12 +304,14 @@ class props(object):
         print('window scale', self.scale)
         print('window size', min(ws,hs), ws, hs)
         Logger.info('size={}; dpi={}, density={}, scale={}'.format(Window.size, Metrics.dpi, Metrics.density, self.scale) )
+        '''
         if ws > hs:
             gap = self.width - self.bg_width *hs
             self.blank_rect = ((self.width - gap, 0), (gap, self.height))
         else:
             gap = self.height - self.bg_height * ws
             self.blank_rect =  ((0, self.height - gap), (self.width, gap))
+        '''
 
 
 
