@@ -22,10 +22,13 @@ from kivy.metrics import Metrics
 from kivy.clock import Clock
 
 #set Window.size
-#from kivy.config import Config
+from kivy.config import Config
 #Config.set('graphics', 'width', '360')
 #Config.set('graphics', 'heigt', '540')
-#Config.write()
+Config.set('graphics', 'position', 'custom')
+Config.set('graphics', 'left', '300')
+Config.set('graphics', 'top', '300')
+Config.write()
 
 def getStats(Widget):
         print('pos',self.pos,
@@ -33,7 +36,7 @@ def getStats(Widget):
                 '\n width', self.width,
                 '\n height',self.height)
 
-class MulitSound(object):
+class MultiSound(object):
     '''load a sound multiple times, sinze kivy can only play a sound onece'''
     def __init__(self, file, n):
         self.num = n
@@ -46,18 +49,22 @@ class MulitSound(object):
         if self.index == self.num:
             self.index = 0
 
+#footsteps = MultiSound(file = 'audio/footstep.wav', n=3)
+footstep = SoundLoader.load('audio/Footstep.wav')
+
+
 
 class Sprite(Image):
     """load an image pass <source='imgname.pngs'>"""
     def __init__(self,  **kwargs):
         #super(Sprite, self).__init__(allow_stretch=True, **kwargs)
         super().__init__(allow_stretch=True,  **kwargs)
-        print(kwargs)
+        #print(kwargs)
         #self.texture.mag_filter = 'nearest'
         w, h = self.texture_size
         self.size = (props.scale * w, props.scale * h)
-        print('size',self.size)
-        
+        #print('size',self.size)
+
 class Background(Widget):
     '''load the background image and scroll it from right to left on the screen
         making it look like you are moving right'''
@@ -74,14 +81,21 @@ class Background(Widget):
 
 
     def scroll(self, ihat):
+        #scroll right
+        amnt = 2.5
         if ihat > 0:
-            self.image.x -= 0.25 * props.scale
-            self.image2.x -= 0.25 * props.scale
-            self.image3.x -= 0.25 * props.scale
+            self.image.x -= amnt * props.scale
+            self.image2.x -= amnt * props.scale
+            self.image3.x -= amnt * props.scale
+        #scroll left
         elif ihat < 0:
-            self.image.x += 0.25 * props.scale
-            self.image2.x += 0.25 * props.scale
-            self.image3.x += 0.25 * props.scale
+            self.image.x += amnt * props.scale
+            self.image2.x += amnt * props.scale
+            self.image3.x += amnt * props.scale
+        #else:
+            #print('do not scroll, ihat is 0')
+
+            ### **for continuous scrolling** ###
         #if self.image.right <= 0:
         #    self.image.x = 0
         #    self.image2.x = self.width
@@ -89,12 +103,16 @@ class Background(Widget):
         #    self.image.x = 0
         #    self.image2.x = -self.width
 
-
 class Man(Sprite):
     def __init__(self, pos):
         #self.images = SpriteAtlas('images/man.atlas')
         self.images = Atlas('images/man.atlas')
-        super().__init__(texture=self.images['man-stop'], pos=pos)
+        w, h = pos[0]-self.images['man-stop'].width/2, pos[1]-self.images['man-stop'].height/2
+        #w, h = self.width/2, self.height/2
+        print('man init', pos, w, h)
+        #w, h, = pos[0]-w/2, pos[1]-h/2
+        print('man init',pos, w, h)
+        super().__init__(texture=self.images['man-stop'], pos=(w,h) )
 
         self.keys = list(  self.images.textures.keys( ) )
 
@@ -102,7 +120,7 @@ class Man(Sprite):
         ksl = 'manleft-left manleft-mid manleft-right manleft-mid'.split()
         self.walk = [self.images[k] for k in ks]
         self.walk_left = [self.images[k] for k in ksl]
-        print([x for x in self.walk])
+        #print([x for x in self.walk])
         #fp = self.images['man-left'].flip_horizontal()
         ### set animation based on veloicity params instead
         ###    (implement later)
@@ -114,52 +132,77 @@ class Man(Sprite):
 
 
     def move(self, pos, *ignore):
-        print('ignore', ignore)
+        '''takes a touch down event and tells man to move to that spot'''
+        #print('ignore', ignore)
         if self.moving is False:
             self.moving = True
+            self.direction(pos)
+           # self.counter = 0
         elif self.moving is True:
+            #self.redirect()
             self.moving = False
             self.texture = self.images['man-stop']
             self.counter = 0
-        self.direction(pos)
-        
+
 
     def direction(self, touch_pos):
-        print( 'pos in move()', touch_pos )
-        print('current pos', self.pos, self.center)
+        print( 'final pos: from move()', touch_pos )
+        self.finalpos = touch_pos
+        #print('current pos', self.pos, self.center)
         delta_x = float( self.center[0]-touch_pos[0] )
-        delta_y = float( self.center[1]-touch_pos[1] ) 
-        print('delta x', delta_x)
+        #delta_y = float( self.center[1]-touch_pos[1] )
+        deltas = [self.center[i]-touch_pos[i] for i in range(2)]
+        self.ihat = -deltas[0]/abs(deltas[0])
+        print('ihat', self.ihat)
+        #print('deltas',deltas)
+        #print('delta x', delta_x)
         self.ihat = -delta_x/abs(delta_x)
         print('ihat', self.ihat)
 
-        
+    def animate(self):
+        #print(self.counter)
+        if self.counter%20 == 0:
+            #print('man.keynum', self.keynum)
+            if self.ihat < 0:
+                self.texture = self.walk_left[self.keynum%4]
+                print('left')
+            else:
+                self.texture = self.walk[self.keynum%4]
+                print('right')
+            if self.keynum%2 is 0:
+                footstep.play()
+            self.keynum += 1
+            self.counter = 0
+        self.counter += 1
+
+
+    def check_edge(self):
+        if self.right < Window.width and self.x:
+            return True
+        else:
+            return False
+
+
     def update(self):
         if self.moving is True:
+            #print('x', self.x)
             #print('man.counter', self.counter)
-            if self.ihat > 0:
+            if self.ihat > 0 and self.center[0]<self.finalpos[0] and self.right < Window.width-20:
                 self.x += 0.7 * props.scale
-            elif self.ihat < 0:
+                self.animate()
+            elif self.ihat < 0 and self.center[0]>self.finalpos[0] and self.x > 20: 
                 self.x -= 0.7 * props.scale
+                self.animate()
             else:
-                print('error ihat =', self.ihat )
+                print('stop moving')#, ihat is 0')
+                #self.ihat = 0
+                self.texture = self.images['man-stop']
+                self.moving = False
+                #self.counter = 0
+        else:
+            self.ihat = 0
+            self.counter = 0
 
-            if self.counter%45 == 0:
-                print('man.keynum', self.keynum)
-                if self.ihat < 0:
-                    self.texture = self.walk_left[self.keynum%4]
-                    print('left')
-                else:
-                    self.texture = self.walk[self.keynum%4]
-                    print('right')
-                self.keynum += 1
-                self.counter = 0
-            self.counter += 1
-                
-        elif self.stopped is not True:
-            self.texture = self.images['man-stop']
-        else: 
-            print('stopped')
 
 
 
@@ -176,8 +219,14 @@ class Game(Widget):
         #self.quit_to_menu = Button( text='back to menu', font_size=14 )
         #self.add_widget(self.quit_to_menu)
         #self.quit_to_menu.bind( on_press=self._on_quit )
-        self.man = Man( (50, 100) )
+        ww, wh = Window.size
+        print('window size',ww, wh)
+        xx, yy = (self.width, self.height)
+        print('xx yy',xx, yy)
+        self.man = Man( (ww/2, wh/2) )
         self.add_widget( self.man )
+        #self.man_rect = Rectangle( pos=self.man.pos, size= self.man.size )
+        #self.add_widget( self.man_rect )
 
         Clock.schedule_interval(self.update, 1.0/30.0)
         self.moving = False
@@ -189,9 +238,8 @@ class Game(Widget):
 
 
     def update(self, dt):
-        if self.man.moving is True:
-            self.man.update()
-            self.background.scroll(self.man.ihat)
+        self.man.update()
+        self.background.scroll(self.man.ihat)
 
     def on_touch_down(self, touch):
         print(touch.profile)
@@ -214,7 +262,7 @@ class MainMenu(Widget):
         #self.add_widget(self.options_button)
         #self.start_button.bind( on_press=self._on_start ) # on_press=App.stop() ) # *largs
         #self.options_button.bind( on_press=self._on_options ) # on_press=App.stop() ) # *largs
-        
+
     def _on_start(self, *ignore):
         print('start!')
         parent = self.parent
@@ -259,7 +307,7 @@ class props(object):
             gap = self.width - self.bg_width *hs
             self.blank_rect = ((self.width - gap, 0), (gap, self.height))
         else:
-            gap = self.height - self.bg_height * ws 
+            gap = self.height - self.bg_height * ws
             self.blank_rect =  ((0, self.height - gap), (self.width, gap))
 
 
@@ -270,4 +318,3 @@ if __name__ =='__main__':
     #sound1 = MultiSound('audio/sound1.wav', 4)
     #sound2 = SoundLoader.load('audio/sound2.wav')
     CatApp().run()
-
