@@ -13,7 +13,7 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.atlas import Atlas
 from kivy.core.audio import SoundLoader
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, InstructionGroup
 
 
 #diagnostics
@@ -36,9 +36,29 @@ class Box(Widget):
         super().__init__()
         self.pos = pos
         self.size = size
-        with self.canvas as c:
-            Color(1, 0, 0)
-            self.nrect = Rectangle( pos=pos, size=size )
+        #
+        self.grp = self.group(1)
+        self.canvas.add( self.grp)
+#        with self.canvas:
+            #self.canvas.add( xyz )
+
+            #Color(1, 0, 0)
+            #self.nrect = Rectangle( pos=pos, size=size )
+
+    def group(self, color):
+        rgb = InstructionGroup()
+        color = Color(1, 1, 0)
+        xyz = color
+        rgb.add(xyz)
+        rgb.add(Rectangle(pos=self.pos, size=self.size) )
+        return rgb
+
+
+
+    def update(self):
+        self.canvas.remove( self.grp )
+        self.grp = self.group( 0 )
+        self.canvas.add( self.grp )
 
 
 def getStats(Widget):
@@ -222,6 +242,7 @@ class Hat(Widget):
         super().__init__(pos=pos)
         #self.angle = angle
         self.image = Sprite(source=source, pos=pos)
+        self.size = self.image.size
         self.add_widget( self.image )
         self.inhand = False
 
@@ -255,8 +276,10 @@ class Game(Widget):
         print('xx yy',sx, sy)
 
         ##hat
-        self.hat = Hat(source='images/hat.png', pos=(ww*5/4, wh/10), angle=20)
+        self.hat = Hat(source='images/hat.png', pos=(ww*1/4, wh/10), angle=20)
+        self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
         print('hat size', self.hat.size)
+        self.add_widget( self.rect_hat )
         self.add_widget( self.hat )
 
         ##man
@@ -279,18 +302,39 @@ class Game(Widget):
         self.man.update()
         self.background.scroll(self.man.ihat)
         self.hat.update(self.man.ihat)
+        self.rect_hat.pos = self.hat.pos
+        self.rect_hat.update()
 
     def on_touch_down(self, touch):
         print(touch.profile)
         print('touch pos',touch.pos)
         #if 5 < touch.pos[0] < 95:
+        edge = 25
         if self.hat.collide_point(*touch.pos):
-            #touch.grab(self)
+            touch.grab(self)
             print('touch in hat!')
-        else:
+        elif edge < touch.pos[0] < Window.width-edge:
             self.man.move(touch.pos)
             print('touch out of hat')
+        else:
+            print('touch out of bounds')
         return True
+
+    def on_touch_move(self, touch):
+        if touch.grab_current is self:
+            print('grab move')
+            self.hat.center = touch.pos
+
+    def on_touch_up(self, touch):
+        if touch.grab_current is self:
+            print('grab up')
+            ###if end position is on man's hand stop the hat...
+            new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
+            #self.hat.pos =  new_hat_pos
+            self.hat.center = touch.pos
+            touch.ungrab(self)
+            # accept the up
+            return True
 
 
 
