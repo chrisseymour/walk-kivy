@@ -25,10 +25,21 @@ from kivy.clock import Clock
 from kivy.config import Config
 Config.set('graphics', 'width', '340')
 Config.set('graphics', 'heigt', '500')
-Config.set('graphics', 'position', 'custom')
-Config.set('graphics', 'left', '300')
-Config.set('graphics', 'top', '300')
+#Config.set('graphics', 'position', 'custom')
+#Config.set('graphics', 'left', '300')
+#Config.set('graphics', 'top', '300')
 Config.write()
+
+
+class Box(Widget):
+    def __init__(self, pos, size):
+        super().__init__()
+        self.pos = pos
+        self.size = size
+        with self.canvas as c:
+            Color(1, 0, 0)
+            self.nrect = Rectangle( pos=pos, size=size )
+
 
 def getStats(Widget):
         print('pos',self.pos,
@@ -73,7 +84,7 @@ class Background(Widget):
         self.image = Sprite( source=source )
         self.add_widget( self.image )
         self.size = self.image.size
-        source2 = 'images/background2.png'
+        source2 = 'images/backgroundMAC.png'
         self.image2 = Sprite( source=source2, x=self.width )
         self.add_widget(self.image2)
         self.image3 = Sprite( source=source2, x=-self.width )
@@ -101,7 +112,7 @@ class Background(Widget):
         #    self.image2.x = self.width
         #elif self.image.x+self.width >= self.width:
         #    self.image.x = 0
-        #    self.image2.x = -self.width
+
 
 class Man(Sprite):
     def __init__(self, pos):
@@ -170,7 +181,8 @@ class Man(Sprite):
                 self.texture = self.walk[self.keynum%4]
                 print('right')
             if self.keynum%2 is 0:
-                footstep.play()
+                print('play footstep')
+                #footstep.play()
             self.keynum += 1
             self.counter = 0
         self.counter += 1
@@ -205,27 +217,52 @@ class Man(Sprite):
 
 
 
+class Hat(Widget):
+    def __init__(self, source, pos, angle):
+        super().__init__(pos=pos)
+        #self.angle = angle
+        self.image = Sprite(source=source, pos=pos)
+        self.add_widget( self.image )
+        self.inhand = False
 
-class Box(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def moveToHand(self, pos):
+        self.pos = pos
+        self.inhand = True
+        #self.image.pos = self.pos
+
+    def update(self, ihat):
+        #print('hat pos',self.pos)
+        if ihat > 0:
+            self.x -= props.scale
+        elif ihat < 0:
+            self.x += props.scale
+        self.image.pos = self.pos
 
 
 class Game(Widget):
     def __init__(self, **kwargs):
         super().__init__()
-        self.background = Background(source= 'images/background.png' )
+        self.background = Background(source= 'images/backgroundMAC.png' )
         self.add_widget(self.background)
         #self.quit_to_menu = Button( text='back to menu', font_size=14 )
         #self.add_widget(self.quit_to_menu)
         #self.quit_to_menu.bind( on_press=self._on_quit )
         ww, wh = Window.size
-        ww, wh = self.size
         print('window size',ww, wh)
-        xx, yy = (self.width, self.height)
-        print('xx yy',xx, yy)
+        sw, sh = self.size
+        print('self size',ww, wh)
+        sx, sy = (self.width, self.height)
+        print('xx yy',sx, sy)
+
+        ##hat
+        self.hat = Hat(source='images/hat.png', pos=(ww*5/4, wh/10), angle=20)
+        print('hat size', self.hat.size)
+        self.add_widget( self.hat )
+
+        ##man
         self.man = Man( (ww/2, wh/2) )
         self.add_widget( self.man )
+
         #self.man_rect = Rectangle( pos=self.man.pos, size= self.man.size )
         #self.add_widget( self.man_rect )
 
@@ -241,11 +278,19 @@ class Game(Widget):
     def update(self, dt):
         self.man.update()
         self.background.scroll(self.man.ihat)
+        self.hat.update(self.man.ihat)
 
     def on_touch_down(self, touch):
         print(touch.profile)
-        print(touch.pos)
-        self.man.move(touch.pos)
+        print('touch pos',touch.pos)
+        #if 5 < touch.pos[0] < 95:
+        if self.hat.collide_point(*touch.pos):
+            #touch.grab(self)
+            print('touch in hat!')
+        else:
+            self.man.move(touch.pos)
+            print('touch out of hat')
+        return True
 
 
 
@@ -297,6 +342,7 @@ class props(object):
     def __init__(self):
         self.bg_width, self.bg_height = 360, 540
         self.width, self.height = Window.size
+        print('props dim', self.width, self.height)
         self.center = Window.center
         ws = self.width / self.bg_width
         hs = self.height / self.bg_height
