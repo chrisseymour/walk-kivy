@@ -2,6 +2,7 @@ from kivy import require
 require('1.10.0')
 
 #standard imports
+from math import sqrt
 #import numpy as np
 
 # kivy widget basics
@@ -13,7 +14,6 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.atlas import Atlas
 from kivy.core.audio import SoundLoader
-from kivy.graphics import Color, Rectangle, InstructionGroup
 
 
 #diagnostics
@@ -30,7 +30,10 @@ Config.set('graphics', 'heigt', '500')
 #Config.set('graphics', 'top', '300')
 Config.write()
 
+# custom imports
+from Shapes import Box
 
+'''
 class Box(Widget):
     def __init__(self, pos, size):
         super().__init__()
@@ -59,7 +62,7 @@ class Box(Widget):
         self.canvas.remove( self.grp )
         self.grp = self.group( 0 )
         self.canvas.add( self.grp )
-
+'''
 
 def getStats(Widget):
         print('pos',self.pos,
@@ -301,9 +304,12 @@ class Game(Widget):
     def update(self, dt):
         self.man.update()
         self.background.scroll(self.man.ihat)
-        self.hat.update(self.man.ihat)
-        self.rect_hat.pos = self.hat.pos
-        self.rect_hat.update()
+        if self.hat.inhand:
+            print('inhand', self.hat.inhand)
+        else:
+            self.hat.update(self.man.ihat)
+            self.rect_hat.pos = self.hat.pos
+            self.rect_hat.update()
 
     def on_touch_down(self, touch):
         print(touch.profile)
@@ -324,6 +330,11 @@ class Game(Widget):
         if touch.grab_current is self:
             print('grab move')
             self.hat.center = touch.pos
+            new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
+            a = sqrt(sum([x*x for x in self.hat.center]))
+            b = sqrt(sum([x*x for x in new_hat_pos]))
+            print('a',a,'b',b)
+            print('abs(a-b)',abs(a-b))
 
     def on_touch_up(self, touch):
         if touch.grab_current is self:
@@ -332,7 +343,17 @@ class Game(Widget):
             new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
             #self.hat.pos =  new_hat_pos
             self.hat.center = touch.pos
+            a = sqrt(sum([x*x for x in self.hat.center]))
+            b = sqrt(sum([x*x for x in new_hat_pos]))
+            print('a',a,'b',b)
+            print('abs(a-b)',abs(a-b))
+
+            if abs(a-b) < 15:
+                self.hat.center = new_hat_pos
+                self.hat.inhand = True
+                print('hat in hand', self.hat.inhand)
             touch.ungrab(self)
+
             # accept the up
             return True
 
