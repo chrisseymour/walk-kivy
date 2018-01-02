@@ -32,37 +32,9 @@ Config.write()
 
 # custom imports
 from Shapes import Box
+from Sprite import Sprite, Background
+from Fire import Fire
 
-'''
-class Box(Widget):
-    def __init__(self, pos, size):
-        super().__init__()
-        self.pos = pos
-        self.size = size
-        #
-        self.grp = self.group(1)
-        self.canvas.add( self.grp)
-#        with self.canvas:
-            #self.canvas.add( xyz )
-
-            #Color(1, 0, 0)
-            #self.nrect = Rectangle( pos=pos, size=size )
-
-    def group(self, color):
-        rgb = InstructionGroup()
-        color = Color(1, 1, 0)
-        xyz = color
-        rgb.add(xyz)
-        rgb.add(Rectangle(pos=self.pos, size=self.size) )
-        return rgb
-
-
-
-    def update(self):
-        self.canvas.remove( self.grp )
-        self.grp = self.group( 0 )
-        self.canvas.add( self.grp )
-'''
 
 def getStats(Widget):
         print('pos',self.pos,
@@ -88,55 +60,6 @@ footstep = SoundLoader.load('audio/Footstep.wav')
 
 
 
-class Sprite(Image):
-    """load an image pass <source='imgname.pngs'>"""
-    def __init__(self,  **kwargs):
-        #super(Sprite, self).__init__(allow_stretch=True, **kwargs)
-        super().__init__(allow_stretch=True,  **kwargs)
-        #print(kwargs)
-        #self.texture.mag_filter = 'nearest'
-        w, h = self.texture_size
-        self.size = (props.scale * w, props.scale * h)
-        #print('size',self.size)
-
-class Background(Widget):
-    '''load the background image and scroll it from right to left on the screen
-        making it look like you are moving right'''
-    def __init__(self, source, **kwargs):
-        super().__init__()
-        self.image = Sprite( source=source )
-        self.add_widget( self.image )
-        self.size = self.image.size
-        source2 = 'images/backgroundMAC.png'
-        self.image2 = Sprite( source=source2, x=self.width )
-        self.add_widget(self.image2)
-        self.image3 = Sprite( source=source2, x=-self.width )
-        self.add_widget(self.image3)
-
-
-    def scroll(self, ihat):
-        #scroll right
-        amnt = 1.0
-        if ihat > 0:
-            self.image.x -= amnt * props.scale
-            self.image2.x -= amnt * props.scale
-            self.image3.x -= amnt * props.scale
-        #scroll left
-        elif ihat < 0:
-            self.image.x += amnt * props.scale
-            self.image2.x += amnt * props.scale
-            self.image3.x += amnt * props.scale
-        #else:
-            #print('do not scroll, ihat is 0')
-
-            ### **for continuous scrolling** ###
-        #if self.image.right <= 0:
-        #    self.image.x = 0
-        #    self.image2.x = self.width
-        #elif self.image.x+self.width >= self.width:
-        #    self.image.x = 0
-
-
 class Man(Sprite):
     def __init__(self, pos):
         #self.images = SpriteAtlas('images/man.atlas')
@@ -146,7 +69,7 @@ class Man(Sprite):
         print('man init', pos, w, h)
         #w, h, = pos[0]-w/2, pos[1]-h/2
         print('man init',pos, w, h)
-        super().__init__(texture=self.images['man-stop'], pos=(w,h) )
+        super().__init__(texture=self.images['man-stop'], scale=props.scale, pos=(w,h) )
 
         self.keys = list(  self.images.textures.keys( ) )
 
@@ -244,18 +167,33 @@ class Hat(Widget):
     def __init__(self, source, pos, angle):
         super().__init__(pos=pos)
         #self.angle = angle
-        self.image = Sprite(source=source, pos=pos)
+        self.image = Sprite(source=source, scale=props.scale, pos=pos)
         self.size = self.image.size
         self.add_widget( self.image )
         self.inhand = False
 
-    def moveToHand(self, pos):
-        self.pos = pos
+    def toHand(self, new_pos):
+        self.center = new_pos
         self.inhand = True
+        print('hat in hand', self.inhand)
+
+    def move(self, touch_pos, new_hat_pos):
+        self.center = touch_pos
+        a = sqrt(sum([x*x for x in self.center]))
+        b = sqrt(sum([x*x for x in new_hat_pos]))
+        print('a',a,'b',b)
+        print('abs(a-b)',abs(a-b))
+
+        if abs(a-b) < 1:
+            self.toHand( new_hat_pos )
+            
+        #self.pos = pos
+        #self.inhand = True
         #self.image.pos = self.pos
 
     def update(self, ihat):
         #print('hat pos',self.pos)
+        print('hat inhand:', self.inhand)
         if ihat > 0:
             self.x -= props.scale
         elif ihat < 0:
@@ -266,7 +204,7 @@ class Hat(Widget):
 class Game(Widget):
     def __init__(self, **kwargs):
         super().__init__()
-        self.background = Background(source= 'images/backgroundMAC.png' )
+        self.background = Background(source= 'images/backgroundMAC.png', scale=props.scale )
         self.add_widget(self.background)
         #self.quit_to_menu = Button( text='back to menu', font_size=14 )
         #self.add_widget(self.quit_to_menu)
@@ -279,11 +217,14 @@ class Game(Widget):
         print('xx yy',sx, sy)
 
         ##hat
-        self.hat = Hat(source='images/hat.png', pos=(ww*1/4, wh/10), angle=20)
+        self.hat = Hat(source='images/hat.png', pos=(ww*3/4, wh/10), angle=20)
         self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
         print('hat size', self.hat.size)
         self.add_widget( self.rect_hat )
         self.add_widget( self.hat )
+
+        self.fire = Fire( scale=props.scale, pos=(-ww*1/4, wh/10), angle=5 )
+        self.add_widget( self.fire )
 
         ##man
         self.man = Man( (ww/2, wh/2) )
@@ -304,21 +245,35 @@ class Game(Widget):
     def update(self, dt):
         self.man.update()
         self.background.scroll(self.man.ihat)
-        if self.hat.inhand:
-            print('inhand', self.hat.inhand)
-        else:
-            self.hat.update(self.man.ihat)
-            self.rect_hat.pos = self.hat.pos
-            self.rect_hat.update()
+        self.fire.update(self.man.ihat)
+        #if self.hat.inhand:
+        #    print('inhand', self.hat.inhand)
+        #else:
+        self.hat.update(self.man.ihat)
+        self.rect_hat.pos = self.hat.pos
+        self.rect_hat.update()
 
     def on_touch_down(self, touch):
         print(touch.profile)
         print('touch pos',touch.pos)
-        #if 5 < touch.pos[0] < 95:
+                #if 5 < touch.pos[0] < 95:
         edge = 25
+            #if self.hat.collide_point(*touch.pos):
+                #self.hat.inhand = True
+
         if self.hat.collide_point(*touch.pos):
-            touch.grab(self)
-            print('touch in hat!')
+            if self.hat.inhand:
+                self.hat.inhand = False
+
+            if touch.is_double_tap:
+                print('Touch is a Dobule tap')
+                print(' - interval is', touch.double_tap_time)
+                print(' - distance between previous is', touch.double_tap_distance)
+                self.hat.toHand( (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2) )
+            else:
+                touch.grab(self)
+                print('touch in hat!')
+                
         elif edge < touch.pos[0] < Window.width-edge:
             self.man.move(touch.pos)
             print('touch out of hat')
@@ -329,29 +284,30 @@ class Game(Widget):
     def on_touch_move(self, touch):
         if touch.grab_current is self:
             print('grab move')
-            self.hat.center = touch.pos
             new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
-            a = sqrt(sum([x*x for x in self.hat.center]))
-            b = sqrt(sum([x*x for x in new_hat_pos]))
-            print('a',a,'b',b)
-            print('abs(a-b)',abs(a-b))
+            self.hat.move( touch_pos=touch.pos, new_hat_pos=new_hat_pos )
+
 
     def on_touch_up(self, touch):
         if touch.grab_current is self:
             print('grab up')
             ###if end position is on man's hand stop the hat...
+
             new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
+            self.hat.move( touch_pos=touch.pos, new_hat_pos=new_hat_pos )
             #self.hat.pos =  new_hat_pos
+            '''
             self.hat.center = touch.pos
             a = sqrt(sum([x*x for x in self.hat.center]))
             b = sqrt(sum([x*x for x in new_hat_pos]))
             print('a',a,'b',b)
             print('abs(a-b)',abs(a-b))
 
-            if abs(a-b) < 15:
+            if abs(a-b) < 1:
                 self.hat.center = new_hat_pos
                 self.hat.inhand = True
                 print('hat in hand', self.hat.inhand)
+            '''
             touch.ungrab(self)
 
             # accept the up
@@ -363,7 +319,7 @@ class MainMenu(Widget):
     def __init__(self, **kwargs):
         super(MainMenu, self).__init__(**kwargs)
         #self.add_widget(Sprite(source='images/background.png'))
-        self.background = Sprite( source='images/background2.png' )
+        self.background = Sprite( source='images/background2.png', scale=props.scale )
         self.add_widget(self.background)
         self.size = self.children[0].size
         #self.start_button = Button(text='Start', pos=(10*props.scale, 0), font_size=14)
