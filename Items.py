@@ -38,21 +38,27 @@ class Hat(Widget):
         self.size = self.image.size
         self.add_widget( self.image )
         self.inhand = False
-
+        
     def toHand(self, new_pos):
         self.center = new_pos
         self.inhand = True
         print('hat in hand', self.inhand)
 
-    def move(self, touch_pos, new_hat_pos):
+    def toHead(self, new_pos):
+        self.center = new_pos
+        self.onhead = True
+        print('hat on head', self.onhead)
+
+    def move(self, touch_pos, target_pos, lock_on=True):
         self.center = touch_pos
         a = sqrt(sum([x*x for x in self.center]))
-        b = sqrt(sum([x*x for x in new_hat_pos]))
+        b = sqrt(sum([x*x for x in target_pos]))
         print('a',a,'b',b)
         print('abs(a-b)',abs(a-b))
 
-        if abs(a-b) < 1:
-            self.toHand( new_hat_pos )
+        limit = 10
+        if abs(a-b) < limit and lock_on:
+            self.toHead( target_pos )
             
         #self.pos = pos
         #self.inhand = True
@@ -60,7 +66,7 @@ class Hat(Widget):
 
     def update(self, ihat):
         #print('hat pos',self.pos)
-        print('hat inhand:', self.inhand)
+        #print('hat inhand:', self.inhand)
         if ihat > 0:
             self.x -= self.scale
         elif ihat < 0:

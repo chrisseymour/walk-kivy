@@ -34,6 +34,7 @@ Config.write()
 from Shapes import Box
 from Sprite import Sprite, Background
 from Items import Fire, Hat
+from Man import Man
 
 
 def getStats(Widget):
@@ -41,6 +42,7 @@ def getStats(Widget):
                 '\n center', self.center,
                 '\n width', self.width,
                 '\n height',self.height)
+
 
 class MultiSound(object):
     '''load a sound multiple times, sinze kivy can only play a sound onece'''
@@ -55,11 +57,12 @@ class MultiSound(object):
         if self.index == self.num:
             self.index = 0
 
+
 #footsteps = MultiSound(file = 'audio/footstep.wav', n=3)
 footstep = SoundLoader.load('audio/Footstep.wav')
 
 
-
+"""
 class Man(Sprite):
     def __init__(self, pos):
         #self.images = SpriteAtlas('images/man.atlas')
@@ -87,6 +90,11 @@ class Man(Sprite):
         self.ihat = 0
         self.counter = 0
 
+    @property
+    def head(self):
+        x = self.x+self.width/3
+        y = self.y+self.height*7/8
+        return x, y
 
     def move(self, pos, *ignore):
         '''takes a touch down event and tells man to move to that spot'''
@@ -139,16 +147,17 @@ class Man(Sprite):
             return True
         else:
             return False
+    
 
 
     def update(self):
         if self.moving is True:
             #print('x', self.x)
             #print('man.counter', self.counter)
-            if self.ihat > 0 and self.center[0]<self.finalpos[0] and self.right < Window.width-20:
+            if self.ihat > 0 and self.center[0]<self.finalpos[0]:# and self.right < Window.width-20:
                 self.x += 0.7 * props.scale
                 self.animate()
-            elif self.ihat < 0 and self.center[0]>self.finalpos[0] and self.x > 20: 
+            elif self.ihat < 0 and self.center[0]>self.finalpos[0]:# and self.x > 20: 
                 self.x -= 0.7 * props.scale
                 self.animate()
             else:
@@ -160,46 +169,9 @@ class Man(Sprite):
         else:
             self.ihat = 0
             self.counter = 0
+"""
 
 
-'''
-class Hat(Widget):
-    def __init__(self, source, pos, angle):
-        super().__init__(pos=pos)
-        #self.angle = angle
-        self.image = Sprite(source=source, scale=props.scale, pos=pos)
-        self.size = self.image.size
-        self.add_widget( self.image )
-        self.inhand = False
-
-    def toHand(self, new_pos):
-        self.center = new_pos
-        self.inhand = True
-        print('hat in hand', self.inhand)
-
-    def move(self, touch_pos, new_hat_pos):
-        self.center = touch_pos
-        a = sqrt(sum([x*x for x in self.center]))
-        b = sqrt(sum([x*x for x in new_hat_pos]))
-        print('a',a,'b',b)
-        print('abs(a-b)',abs(a-b))
-
-        if abs(a-b) < 1:
-            self.toHand( new_hat_pos )
-            
-        #self.pos = pos
-        #self.inhand = True
-        #self.image.pos = self.pos
-
-    def update(self, ihat):
-        #print('hat pos',self.pos)
-        print('hat inhand:', self.inhand)
-        if ihat > 0:
-            self.x -= props.scale
-        elif ihat < 0:
-            self.x += props.scale
-        self.image.pos = self.pos
-'''
 
 class Game(Widget):
     def __init__(self, **kwargs):
@@ -227,7 +199,7 @@ class Game(Widget):
         self.add_widget( self.fire )
 
         ##man
-        self.man = Man( (ww/2, wh/2) )
+        self.man = Man( props.scale, (ww/2, wh/2) )
         self.add_widget( self.man )
 
         #self.man_rect = Rectangle( pos=self.man.pos, size= self.man.size )
@@ -252,31 +224,41 @@ class Game(Widget):
         self.hat.update(self.man.ihat)
         self.rect_hat.pos = self.hat.pos
         self.rect_hat.update()
+        '''
+        if self.hat.onhead:
+            parent = self.parent
+            parent.remove_widget(self)
+            parent.add_widget( MainMenu() )
+            #parent.add_widget( GameOver() )
+        '''
 
     def on_touch_down(self, touch):
         print(touch.profile)
         print('touch pos',touch.pos)
                 #if 5 < touch.pos[0] < 95:
-        edge = 25
+        edge = 35#self.man.width/2
             #if self.hat.collide_point(*touch.pos):
                 #self.hat.inhand = True
 
         if self.hat.collide_point(*touch.pos):
-            if self.hat.inhand:
-                self.hat.inhand = False
-
+            #if self.hat.inhand:
             if touch.is_double_tap:
                 print('Touch is a Dobule tap')
                 print(' - interval is', touch.double_tap_time)
                 print(' - distance between previous is', touch.double_tap_distance)
                 self.hat.toHand( (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2) )
-            else:
+            elif self.hat.inhand:
+                self.hat.inhand = False
                 touch.grab(self)
-                print('touch in hat!')
+                print('hat leaving hand hat!')
+            else:
+                print('touch in hat, but its not in hand and not a double click!')
                 
         elif edge < touch.pos[0] < Window.width-edge:
             self.man.move(touch.pos)
             print('touch out of hat')
+            print('touch pos', touch.pos)
+
         else:
             print('touch out of bounds')
         return True
@@ -284,8 +266,8 @@ class Game(Widget):
     def on_touch_move(self, touch):
         if touch.grab_current is self:
             print('grab move')
-            new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
-            self.hat.move( touch_pos=touch.pos, new_hat_pos=new_hat_pos )
+            #new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
+            self.hat.move( touch_pos=touch.pos, target_pos=self.man.head, lock_on=False )
 
 
     def on_touch_up(self, touch):
@@ -293,21 +275,10 @@ class Game(Widget):
             print('grab up')
             ###if end position is on man's hand stop the hat...
 
-            new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
-            self.hat.move( touch_pos=touch.pos, new_hat_pos=new_hat_pos )
+            #new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
+            print('head pos:', self.man.head)
+            self.hat.move( touch_pos=touch.pos, target_pos=self.man.head )
             #self.hat.pos =  new_hat_pos
-            '''
-            self.hat.center = touch.pos
-            a = sqrt(sum([x*x for x in self.hat.center]))
-            b = sqrt(sum([x*x for x in new_hat_pos]))
-            print('a',a,'b',b)
-            print('abs(a-b)',abs(a-b))
-
-            if abs(a-b) < 1:
-                self.hat.center = new_hat_pos
-                self.hat.inhand = True
-                print('hat in hand', self.hat.inhand)
-            '''
             touch.ungrab(self)
 
             # accept the up
