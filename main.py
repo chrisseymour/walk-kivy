@@ -33,7 +33,7 @@ Config.write()
 # custom imports
 from Shapes import Box
 from Sprite import Sprite, Background
-from Fire import Fire
+from Items import Fire, Hat
 
 
 def getStats(Widget):
@@ -162,7 +162,7 @@ class Man(Sprite):
             self.counter = 0
 
 
-
+'''
 class Hat(Widget):
     def __init__(self, source, pos, angle):
         super().__init__(pos=pos)
@@ -199,7 +199,7 @@ class Hat(Widget):
         elif ihat < 0:
             self.x += props.scale
         self.image.pos = self.pos
-
+'''
 
 class Game(Widget):
     def __init__(self, **kwargs):
@@ -217,7 +217,7 @@ class Game(Widget):
         print('xx yy',sx, sy)
 
         ##hat
-        self.hat = Hat(source='images/hat.png', pos=(ww*3/4, wh/10), angle=20)
+        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*3/4, wh/10), angle=20)
         self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
         print('hat size', self.hat.size)
         self.add_widget( self.rect_hat )
@@ -233,7 +233,7 @@ class Game(Widget):
         #self.man_rect = Rectangle( pos=self.man.pos, size= self.man.size )
         #self.add_widget( self.man_rect )
 
-        Clock.schedule_interval(self.update, 1.0/30.0)
+        Clock.schedule_interval(self.update, 1.0/60.0)
         self.moving = False
 
     def _on_quit(self, *ignore):
