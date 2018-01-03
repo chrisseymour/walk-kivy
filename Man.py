@@ -38,7 +38,7 @@ class Man(Sprite):
     @property
     def head(self):
         x = self.x+self.width/3
-        y = self.y+self.height*7/8
+        y = self.y+self.height*9/10
         return x, y
 
     def move(self, pos, *ignore):

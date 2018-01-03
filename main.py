@@ -14,6 +14,8 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.atlas import Atlas
 from kivy.core.audio import SoundLoader
+# text
+from kivy.uix.label import Label
 
 
 #diagnostics
@@ -31,7 +33,7 @@ Config.set('graphics', 'heigt', '500')
 Config.write()
 
 # custom imports
-from Shapes import Box
+from Shapes import Box, Round
 from Sprite import Sprite, Background
 from Items import Fire, Hat
 from Man import Man
@@ -62,141 +64,35 @@ class MultiSound(object):
 footstep = SoundLoader.load('audio/Footstep.wav')
 
 
-"""
-class Man(Sprite):
-    def __init__(self, pos):
-        #self.images = SpriteAtlas('images/man.atlas')
-        self.images = Atlas('images/man.atlas')
-        w, h = pos[0]-self.images['man-stop'].width/2, pos[1]-self.images['man-stop'].height/2
-        w, h = self.width/2, self.height/2
-        print('man init', pos, w, h)
-        #w, h, = pos[0]-w/2, pos[1]-h/2
-        print('man init',pos, w, h)
-        super().__init__(texture=self.images['man-stop'], scale=props.scale, pos=(w,h) )
-
-        self.keys = list(  self.images.textures.keys( ) )
-
-        ks = 'man-left man-mid man-right man-mid'.split()
-        ksl = 'manleft-left manleft-mid manleft-right manleft-mid'.split()
-        self.walk = [self.images[k] for k in ks]
-        self.walk_left = [self.images[k] for k in ksl]
-        #print([x for x in self.walk])
-        #fp = self.images['man-left'].flip_horizontal()
-        ### set animation based on veloicity params instead
-        ###    (implement later)
-        self.moving = False
-        self.stopped = True
-        self.keynum = 0
-        self.ihat = 0
-        self.counter = 0
-
-    @property
-    def head(self):
-        x = self.x+self.width/3
-        y = self.y+self.height*7/8
-        return x, y
-
-    def move(self, pos, *ignore):
-        '''takes a touch down event and tells man to move to that spot'''
-        #print('ignore', ignore)
-        if self.moving is False:
-            self.moving = True
-            self.direction(pos)
-           # self.counter = 0
-        elif self.moving is True:
-            #self.redirect()
-            self.moving = False
-            self.texture = self.images['man-stop']
-            self.counter = 0
-
-
-    def direction(self, touch_pos):
-        print( 'final pos: from move()', touch_pos )
-        self.finalpos = touch_pos
-        #print('current pos', self.pos, self.center)
-        delta_x = float( self.center[0]-touch_pos[0] )
-        #delta_y = float( self.center[1]-touch_pos[1] )
-        deltas = [self.center[i]-touch_pos[i] for i in range(2)]
-        self.ihat = -deltas[0]/abs(deltas[0])
-        print('ihat', self.ihat)
-        #print('deltas',deltas)
-        #print('delta x', delta_x)
-        self.ihat = -delta_x/abs(delta_x)
-        print('ihat', self.ihat)
-
-    def animate(self):
-        #print(self.counter)
-        if self.counter%20 == 0:
-            #print('man.keynum', self.keynum)
-            if self.ihat < 0:
-                self.texture = self.walk_left[self.keynum%4]
-                print('left')
-            else:
-                self.texture = self.walk[self.keynum%4]
-                print('right')
-            if self.keynum%2 is 0:
-                print('play footstep')
-                #footstep.play()
-            self.keynum += 1
-            self.counter = 0
-        self.counter += 1
-
-
-    def check_edge(self):
-        if self.right < Window.width and self.x:
-            return True
-        else:
-            return False
-    
-
-
-    def update(self):
-        if self.moving is True:
-            #print('x', self.x)
-            #print('man.counter', self.counter)
-            if self.ihat > 0 and self.center[0]<self.finalpos[0]:# and self.right < Window.width-20:
-                self.x += 0.7 * props.scale
-                self.animate()
-            elif self.ihat < 0 and self.center[0]>self.finalpos[0]:# and self.x > 20: 
-                self.x -= 0.7 * props.scale
-                self.animate()
-            else:
-                print('stop moving')#, ihat is 0')
-                #self.ihat = 0
-                self.texture = self.images['man-stop']
-                self.moving = False
-                #self.counter = 0
-        else:
-            self.ihat = 0
-            self.counter = 0
-"""
-
-
-
 class Game(Widget):
     def __init__(self, **kwargs):
+        print('info here', self.parent )
         super().__init__()
+        print('info here', self.parent )
         self.background = Background(source= 'images/backgroundMAC.png', scale=props.scale )
         self.add_widget(self.background)
-        #self.quit_to_menu = Button( text='back to menu', font_size=14 )
-        #self.add_widget(self.quit_to_menu)
-        #self.quit_to_menu.bind( on_press=self._on_quit )
-        ww, wh = Window.size
-        print('window size',ww, wh)
-        sw, sh = self.size
-        print('self size',ww, wh)
-        sx, sy = (self.width, self.height)
-        print('xx yy',sx, sy)
 
-        ##hat
-        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*3/4, wh/10), angle=20)
-        self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
-        print('hat size', self.hat.size)
-        self.add_widget( self.rect_hat )
-        self.add_widget( self.hat )
+        ww, wh = Window.size
+        #print('window size',ww, wh)
+        #sw, sh = self.size
+        #print('self size',ww, wh)
+        #sx, sy = (self.width, self.height)
+        #print('xx yy',sx, sy)
 
         self.fire = Fire( scale=props.scale, pos=(-ww*1/4, wh/10), angle=5 )
         self.add_widget( self.fire )
+        #self.quit_to_menu = Button( text='back to menu', font_size=14 )
+        #self.add_widget(self.quit_to_menu)
+        #self.quit_to_menu.bind( on_press=self._on_quit )
+
+        ##hat
+        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*5/4, wh/10), angle=20)
+        #self.rect_hat = Round(pos=self.hat.center, size=self.hat.size)
+        self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
+        print('hat size', self.hat.size)
+        #self.add_widget( self.rect_hat )
+        self.add_widget( self.hat )
+
 
         ##man
         self.man = Man( props.scale, (ww/2, wh/2) )
@@ -205,16 +101,20 @@ class Game(Widget):
         #self.man_rect = Rectangle( pos=self.man.pos, size= self.man.size )
         #self.add_widget( self.man_rect )
 
-        Clock.schedule_interval(self.update, 1.0/60.0)
+        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
         self.moving = False
 
     def _on_quit(self, *ignore):
         parent = self.parent
+        print('parent in _on_quit()', parent)
         parent.remove_widget( self )
-        parent.add_widget( MainMenu() )
+        #parent.add_widget( MainMenu() )
+        parent.add_widget( GameOver() )
+        self.ud.cancel()
 
 
     def update(self, dt):
+        #print(dt)
         self.man.update()
         self.background.scroll(self.man.ihat)
         self.fire.update(self.man.ihat)
@@ -222,17 +122,21 @@ class Game(Widget):
         #    print('inhand', self.hat.inhand)
         #else:
         self.hat.update(self.man.ihat)
-        self.rect_hat.pos = self.hat.pos
-        self.rect_hat.update()
-        '''
-        if self.hat.onhead:
-            parent = self.parent
-            parent.remove_widget(self)
-            parent.add_widget( MainMenu() )
+        #self.rect_hat.pos = self.hat.pos
+        #self.rect_hat.update()
+        if self.hat.collide_point( *self.fire.center ):
+            print( 'hat is burning' )
+            self.hat.burn()
+
+
+            #parent = self.parent
+            #parent.remove_widget( self )
+            #parent.add_widget( MainMenu() )
             #parent.add_widget( GameOver() )
-        '''
 
     def on_touch_down(self, touch):
+        if self.hat.onhead:
+            self._on_quit()
         print(touch.profile)
         print('touch pos',touch.pos)
                 #if 5 < touch.pos[0] < 95:
@@ -249,6 +153,7 @@ class Game(Widget):
                 self.hat.toHand( (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2) )
             elif self.hat.inhand:
                 self.hat.inhand = False
+                self.hat.moving = True
                 touch.grab(self)
                 print('hat leaving hand hat!')
             else:
@@ -277,6 +182,7 @@ class Game(Widget):
 
             #new_hat_pos = (self.man.pos[0]+self.man.width, self.man.pos[1]+self.man.height/2)
             print('head pos:', self.man.head)
+            self.hat.moving = False
             self.hat.move( touch_pos=touch.pos, target_pos=self.man.head )
             #self.hat.pos =  new_hat_pos
             touch.ungrab(self)
@@ -285,6 +191,37 @@ class Game(Widget):
             return True
 
 
+class GameOver(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.background = Background( source = 'images/backgroundMAC.png', scale=props.scale )
+        self.message = Label(text="I'm sorry, you're a rasict", pos = (50, 50) )
+        self.message2 = Label(text="Game Over")
+        self.add_widget( self.background )
+        self.add_widget( self.message )
+        self.add_widget( self.message2 )
+        
+        self.counter = 0
+        self.loaded = False
+        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
+        
+    def update(self, dt):
+        print(self.counter)
+        if self.counter < 100:
+            self.counter += 1
+        elif not self.loaded:
+            self.loaded = True
+            self.ud.cancel()
+
+
+
+    def on_touch_down(self, touch):
+        if self.loaded:
+            parent = self.parent
+            print('parent in GameOverWidget', parent)
+            parent.remove_widget( self )
+            parent.add_widget( Game() )
+
 
 class MainMenu(Widget):
     def __init__(self, **kwargs):
@@ -292,7 +229,7 @@ class MainMenu(Widget):
         #self.add_widget(Sprite(source='images/background.png'))
         self.background = Sprite( source='images/background2.png', scale=props.scale )
         self.add_widget(self.background)
-        self.size = self.children[0].size
+        #self.size = self.children[0].size
         #self.start_button = Button(text='Start', pos=(10*props.scale, 0), font_size=14)
         #self.start_button.size = [s for s in self.size]
         #self.add_widget(self.start_button)
@@ -325,8 +262,14 @@ class CatApp(App):
 #        props.init()
         top = Widget()
         top.add_widget(Game())
+        xxx = top.children[0]
+        print('xxxxx', xxx.parent)
+
         #top.add_widget(MainMenu())
         return top
+
+    def __len__(self):
+        return 1
 
 class props(object):
     '''screen properties and background
