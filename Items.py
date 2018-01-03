@@ -50,8 +50,11 @@ class Hat(Widget):
         self.inhand = False
         self.onhead = False
         self.moving = False
+        self.burnt = False
 
-    def burn(self):
+    def burn(self, time):
+        self.win_time = time
+        self.burnt = True
         burn = 'images/hat_burn.png'
         self.remove_widget(self.image)
         self.image = Sprite(source=burn, scale=self.scale, pos=self.pos)

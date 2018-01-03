@@ -102,7 +102,9 @@ class Game(Widget):
         #self.add_widget( self.man_rect )
 
         self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
+        ## status variables
         self.moving = False
+        self.total_time = 0
 
     def _on_quit(self, *ignore):
         parent = self.parent
@@ -112,9 +114,19 @@ class Game(Widget):
         parent.add_widget( GameOver() )
         self.ud.cancel()
 
+    def _on_win(self, *ignore):
+        parent = self.parent
+        print('parent in _on_quit()', parent)
+        parent.remove_widget( self )
+        #parent.add_widget( MainMenu() )
+        parent.add_widget( ScoreScreen(self.hat.win_time) )
+        self.ud.cancel()
+
+
 
     def update(self, dt):
-        #print(dt)
+        self.total_time += dt
+        print('total time', self.total_time)
         self.man.update()
         self.background.scroll(self.man.ihat)
         self.fire.update(self.man.ihat)
@@ -124,9 +136,9 @@ class Game(Widget):
         self.hat.update(self.man.ihat)
         #self.rect_hat.pos = self.hat.pos
         #self.rect_hat.update()
-        if self.hat.collide_point( *self.fire.center ):
+        if self.hat.collide_point( *self.fire.center ) and not self.hat.burnt:
             print( 'hat is burning' )
-            self.hat.burn()
+            self.hat.burn(self.total_time)
 
 
             #parent = self.parent
@@ -137,6 +149,8 @@ class Game(Widget):
     def on_touch_down(self, touch):
         if self.hat.onhead:
             self._on_quit()
+        if self.hat.burnt:
+            self._on_win()
         print(touch.profile)
         print('touch pos',touch.pos)
                 #if 5 < touch.pos[0] < 95:
@@ -190,6 +204,48 @@ class Game(Widget):
             # accept the up
             return True
 
+class ScoreScreen(Widget):
+    def __init__(self, time, **kwargs):
+        super().__init__(**kwargs)
+        self.background = Background( source = 'images/backgroundMAC.png', scale = props.scale )
+        self.add_widget( self.background )
+        self.message = Label(text="Congratulations Comrade!", pos = (50, 150) )
+        self.message2 = Label(text="You Win!\nCompletion time: {:03f}".format(time), pos=(50, 25) )
+        self.m1 = True
+        self.m2 = True
+        #
+        
+        #self.add_widget( self.message )
+        #self.add_widget( self.message2 )
+        
+        self.counter = 0
+        self.loaded = False
+        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
+        
+    def update(self, dt):
+        print(self.counter)
+        if self.counter < 300:
+            self.counter += 1
+        elif not self.loaded:
+            self.loaded = True
+            self.ud.cancel()
+        if self.counter > 100 and self.m1:
+            self.m1 = False
+            self.add_widget( self.message )
+        elif self.counter > 200 and self.m2:
+            self.m2 = False
+            self.add_widget( self.message2 )
+
+
+
+    def on_touch_down(self, touch):
+        if self.loaded:
+            parent = self.parent
+            print('parent in GameOverWidget', parent)
+            parent.remove_widget( self )
+            parent.add_widget( Game() )
+
+#elf.background = Background( source = 'images/backgroundMAC.png', scale=props.scale )
 
 class GameOver(Widget):
     def __init__(self, **kwargs):
