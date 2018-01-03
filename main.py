@@ -86,7 +86,7 @@ class Game(Widget):
         #self.quit_to_menu.bind( on_press=self._on_quit )
 
         ##hat
-        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*5/4, wh/10), angle=20)
+        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*3/4, wh/10), angle=20)
         #self.rect_hat = Round(pos=self.hat.center, size=self.hat.size)
         self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
         print('hat size', self.hat.size)
@@ -126,7 +126,7 @@ class Game(Widget):
 
     def update(self, dt):
         self.total_time += dt
-        print('total time', self.total_time)
+        #print('total time', self.total_time)
         self.man.update()
         self.background.scroll(self.man.ihat)
         self.fire.update(self.man.ihat)
@@ -154,7 +154,7 @@ class Game(Widget):
         print(touch.profile)
         print('touch pos',touch.pos)
                 #if 5 < touch.pos[0] < 95:
-        edge = 35#self.man.width/2
+        edge = 25#self.man.width/2
             #if self.hat.collide_point(*touch.pos):
                 #self.hat.inhand = True
 

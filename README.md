@@ -11,3 +11,4 @@
 ### - add flames and animation to 'Fire' class
 
 python -m kivy.atlas fire 500x500 src/fire/fire-0*
+python -m kivy.atlas man 1100x405 src/man/man*

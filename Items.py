@@ -13,9 +13,10 @@ class Fire(Widget):
         source = 'images/logs.png'
         #self.angle = angle
         self.images = Atlas('images/fire.atlas')
-        self.kys = list( self.images.textures.keys() )
+        self.keys = list( self.images.textures.keys() )
+        print('fire keys list', self.keys )
         #self.images = Atlas('images/man.atlas')
-        self.image = Sprite(texture=self.images[self.kys[0]], scale=self.scale, pos=pos)
+        self.image = Sprite(texture=self.images[self.keys[0]], scale=self.scale, pos=pos)
         #self.image = Sprite(source=self.images[self.kys[0]], scale=self.scale, pos=pos)
         self.size = self.image.size
         self.add_widget( self.image )
@@ -43,14 +44,20 @@ class Hat(Widget):
     def __init__(self, source, scale, pos, angle):
         super().__init__(pos=pos)
         self.scale = scale
-        #self.angle = angle
+        self.images = Atlas('images/hat.atlas')  ## Atlas initialization
+        self.kys = list( self.images.textures.keys() )  ## atlas keys into a list
+        print('hat keys list', self.kys )
         self.image = Sprite(source=source, scale=self.scale, pos=pos)
         self.size = self.image.size
         self.add_widget( self.image )
         self.inhand = False
         self.onhead = False
         self.moving = False
+        #burning status
+        self.burning = False
         self.burnt = False
+        self.burn_counter = 0
+        self.sprite = 0
 
     def burn(self, time):
         self.win_time = time
@@ -86,6 +93,20 @@ class Hat(Widget):
         #self.image.pos = self.pos
 
     def update(self, ihat):
+        '''
+        if self.burnt:
+            self.image = self.images['hat_burnt-final']
+        elif self.burning and self.burn_counter < 200:
+            if self.burn_counter%40 == 0:
+                self.sprite += 1
+                self.image = self.images[ self.keys[self.sprite] ]
+            self.burn_counter += 1
+        else:
+            self.burning = False
+            self.burnt = True
+        '''
+
+
         #print('hat pos',self.pos)
         #print('hat inhand:', self.inhand)
         if ihat > 0:
