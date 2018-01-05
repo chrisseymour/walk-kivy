@@ -93,20 +93,6 @@ class Hat(Widget):
         #self.image.pos = self.pos
 
     def update(self, ihat):
-        '''
-        if self.burnt:
-            self.image = self.images['hat_burnt-final']
-        elif self.burning and self.burn_counter < 200:
-            if self.burn_counter%40 == 0:
-                self.sprite += 1
-                self.image = self.images[ self.keys[self.sprite] ]
-            self.burn_counter += 1
-        else:
-            self.burning = False
-            self.burnt = True
-        '''
-
-
         #print('hat pos',self.pos)
         #print('hat inhand:', self.inhand)
         if ihat > 0:
@@ -123,4 +109,17 @@ class Hat(Widget):
             self.y -= self.scale
         
         self.image.pos = self.pos
+"""
+        if self.burnt:
+            self.image = self.images['hat_burnt-final']
+        elif self.burning and self.burn_counter < 200:
+            if self.burn_counter%40 == 0:
+                self.sprite += 1
+                self.image = self.images[ self.keys[self.sprite] ]
+            self.burn_counter += 1
+            print('burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
+        else:
+            self.burning = False
+            self.burnt = True
+"""
 
