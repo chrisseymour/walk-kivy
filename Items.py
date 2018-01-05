@@ -1,4 +1,3 @@
-# -Fire.py-
 # Items.py
 from math import sqrt
 from kivy.uix.widget import Widget
@@ -15,12 +14,16 @@ class Fire(Widget):
         self.images = Atlas('images/fire.atlas')
         self.keys = list( self.images.textures.keys() )
         print('fire keys list', self.keys )
+        self.keys = 'fire-04 fire-05'.split()
+        print('fire keys list', self.keys )
         #self.images = Atlas('images/man.atlas')
         self.image = Sprite(texture=self.images[self.keys[0]], scale=self.scale, pos=pos)
         #self.image = Sprite(source=self.images[self.kys[0]], scale=self.scale, pos=pos)
         self.size = self.image.size
         self.add_widget( self.image )
         #self.inhand = False
+        self.burn_counter = 0
+        self.sprite = 0
 
     def moveToHand(self, pos):
         self.pos = pos
@@ -38,6 +41,14 @@ class Fire(Widget):
         elif ihat < 0:
             self.x += self.scale
         self.image.pos = self.pos
+        
+        if self.burn_counter%25 == 0:
+            self.sprite += 1
+            if self.sprite >= len(self.keys):
+                self.sprite = 0
+            self.image.texture = self.images[ self.keys[self.sprite] ]
+            print('fire burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
+        self.burn_counter += 1
 
 
 class Hat(Widget):
@@ -45,7 +56,9 @@ class Hat(Widget):
         super().__init__(pos=pos)
         self.scale = scale
         self.images = Atlas('images/hat.atlas')  ## Atlas initialization
-        self.kys = list( self.images.textures.keys() )  ## atlas keys into a list
+        #self.kys = list( self.images.textures.keys() )  ## atlas keys into a list
+        self.kys = ( 'hat_burnt0', 'hat_burnt1', 'hat_burnt2', 'hat_burnt3', 
+                'hat_burnt4', 'hat_burnt-final')
         print('hat keys list', self.kys )
         self.image = Sprite(source=source, scale=self.scale, pos=pos)
         self.size = self.image.size
@@ -58,14 +71,18 @@ class Hat(Widget):
         self.burnt = False
         self.burn_counter = 0
         self.sprite = 0
+        self.animation_value = int(200/(len(self.kys)-1))
+        print('animation value', self.animation_value)
 
     def burn(self, time):
-        self.win_time = time
-        self.burnt = True
-        burn = 'images/hat_burn.png'
-        self.remove_widget(self.image)
-        self.image = Sprite(source=burn, scale=self.scale, pos=self.pos)
-        self.add_widget( self.image )
+        if not self.burning:
+            self.win_time = time
+            self.burning = True
+            print('win time:', self.win_time)
+        #burn = 'images/hat_burn.png'
+        #self.remove_widget(self.image)
+        #self.image = Sprite(source=burn, scale=self.scale, pos=self.pos)
+        #self.add_widget( self.image )
         
     def toHand(self, new_pos):
         self.center = new_pos
@@ -107,19 +124,21 @@ class Hat(Widget):
                 self.x += self.scale
         if  (not self.inhand) and  (not self.onhead) and self.center[1] > Window.height/8 and (not self.moving):
             self.y -= self.scale
-        
-        self.image.pos = self.pos
-"""
-        if self.burnt:
-            self.image = self.images['hat_burnt-final']
-        elif self.burning and self.burn_counter < 200:
-            if self.burn_counter%40 == 0:
+        self.image.pos = self.pos #update hat position
+        ## check if hat is on fire, if it is, start burn animation 
+        if self.burning and self.burn_counter < 201-self.animation_value:
+            if self.burn_counter%self.animation_value == 0:
                 self.sprite += 1
-                self.image = self.images[ self.keys[self.sprite] ]
+                self.image.texture = self.images[ self.kys[self.sprite] ]
             self.burn_counter += 1
-            print('burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
-        else:
+            print('hat burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
+        elif self.burning and not self.burnt: ## if done burning, change status of hat
+            print('burnt')
             self.burning = False
             self.burnt = True
-"""
+            self.image.texture = self.images['hat_burnt-final']
+
+        #elif self.burnt:
+            #self.image.texture = self.images['hat_burnt-final']
+        
 

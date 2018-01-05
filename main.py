@@ -127,6 +127,17 @@ class Game(Widget):
         self.music.stop()
         #self.music.play()
 
+    def messageScreen(self, f, args):
+        parent = self.parent
+        print('parent in messageScreen()', parent)
+        parent.remove_widget( self )
+        #parent.add_widget( MainMenu() )
+        #parent.add_widget( ScoreScreen(self.hat.win_time) )
+        print(args)
+        parent.add_widget( f() )
+        self.ud.cancel()
+        self.music.stop()
+         
 
 
     def update(self, dt):
@@ -141,8 +152,8 @@ class Game(Widget):
         self.hat.update(self.man.ihat)
         #self.rect_hat.pos = self.hat.pos
         #self.rect_hat.update()
-        if self.hat.collide_point( *self.fire.center ) and not self.hat.burnt:
-            print( 'hat is burning' )
+        if self.hat.collide_point( *self.fire.center ) and not self.hat.burning:
+            #print( 'hat is burning' )
             self.hat.burn(self.total_time)
 
 
@@ -154,6 +165,7 @@ class Game(Widget):
     def on_touch_down(self, touch):
         if self.hat.onhead:
             self._on_quit()
+            #self.messageScreen( GameOver, False )
         if self.hat.burnt:
             self._on_win()
         print(touch.profile)
@@ -274,6 +286,7 @@ class GameOver(Widget):
 
         self.loaded = False
         self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
+        #return self
         
     def update(self, dt):
         #print(self.counter)
