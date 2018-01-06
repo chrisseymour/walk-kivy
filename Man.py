@@ -2,6 +2,7 @@
 
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
+from kivy.core.audio import SoundLoader
 from kivy.atlas import Atlas
 from Sprite import Sprite
 
@@ -25,6 +26,7 @@ class Man(Sprite):
         ksl = 'manleft-left manleft-mid manleft-right manleft-mid'.split()
         self.walk = [self.images[k] for k in ks]
         self.walk_left = [self.images[k] for k in ksl]
+        self.footstep = SoundLoader.load('audio/Footstep.wav')
         #print([x for x in self.walk])
         #fp = self.images['man-left'].flip_horizontal()
         ### set animation based on veloicity params instead
@@ -81,7 +83,7 @@ class Man(Sprite):
                 print('right')
             if self.keynum%2 is 0:
                 print('play footstep')
-                #footstep.play()
+                self.footstep.play()
             self.keynum += 1
             self.counter = 0
         self.counter += 1

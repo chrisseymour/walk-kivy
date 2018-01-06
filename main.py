@@ -23,6 +23,14 @@ from kivy.logger import Logger
 from kivy.metrics import Metrics
 from kivy.clock import Clock
 
+# custom imports
+from Shapes import Box, Round
+from Sprite import Sprite, Background
+from Items import Fire, Hat
+from Man import Man
+#from Sounds import MulitSound
+#from Screens import GameOver, ScoreScreen
+
 #set Window.size
 from kivy.config import Config
 Config.set('graphics', 'width', '340')
@@ -31,12 +39,6 @@ Config.set('graphics', 'heigt', '500')
 #Config.set('graphics', 'left', '300')
 #Config.set('graphics', 'top', '300')
 Config.write()
-
-# custom imports
-from Shapes import Box, Round
-from Sprite import Sprite, Background
-from Items import Fire, Hat
-from Man import Man
 
 
 def getStats(Widget):
@@ -63,6 +65,106 @@ class MultiSound(object):
 #footsteps = MultiSound(file = 'audio/footstep.wav', n=3)
 footstep = SoundLoader.load('audio/Footstep.wav')
 
+class ScoreScreen(Widget):
+    def __init__(self, time, scale, **kwargs):
+        super().__init__(**kwargs)
+        self.background = Background( source = 'images/backgroundMAC.png', scale = scale )
+        self.add_widget( self.background )
+        x, y = Window.size
+        print('window size in Score Screen', x, y)
+        self.message = Label(text="Congratulations Comrade!", pos = (x/4, y/2) )
+        self.message2 = Label(text="You Win!", pos=(x/4, y/3), font_size='20sp' )
+        self.message3 = Label(text="Completion time: {:03f}".format(time), pos=(x/3, y/5) )
+        self.m1 = True
+        self.m2 = True
+        self.m3 = True
+        
+        #self.add_widget( self.message )
+        #self.add_widget( self.message2 )
+        
+        self.counter = 0
+        self.loaded = False
+        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
+        
+    def update(self, dt):
+        #print(self.counter)
+        if self.counter < 300: # check if it's time to continue or not
+            self.counter += 1
+        elif not self.loaded: 
+            self.loaded = True
+            self.ud.cancel()
+
+        if self.counter > 50 and self.m1: # draw win message
+            self.m1 = False
+            self.add_widget( self.message )
+        elif self.counter > 120 and self.m2:
+            self.m2 = False
+            self.add_widget( self.message2 )
+        elif self.counter > 200 and self.m3:
+            self.m3 = False
+            self.add_widget( self.message3 )
+
+
+    def on_touch_down(self, touch):
+        if self.loaded:
+            parent = self.parent
+            print('parent in GameOverWidget', parent)
+            parent.remove_widget( self )
+            parent.add_widget( Game() )
+
+
+class GameOver(Widget):
+    def __init__(self, scale, **kwargs):
+        super().__init__(**kwargs)
+        self.background = Background( source = 'images/backgroundMAC.png', scale=scale )
+        x,y = Window.size
+        print('window size in Score Screen', x, y)
+        self.message = Label(text="I'm sorry.", pos=(x/4, y/3) )
+        self.message2 = Label(text="You're a rasict.", pos=(x/4, y/4), font_size='20sp' )
+        self.message3 = Label(text="Game Over.", pos=(x/3, y/5) )
+
+        self.add_widget( self.background )
+        self.add_widget( self.message )
+        #self.add_widget( self.message2 )
+        
+        self.m1 = True
+        self.m2 = True
+        self.counter = 0
+
+        self.loaded = False
+        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
+        #return self
+        
+    def update(self, dt):
+        #print(self.counter)
+        #if self.counter < 100:
+        #    self.counter += 1
+        #elif not self.loaded:
+        #    self.loaded = True
+        #    self.ud.cancel()
+
+        if self.counter < 300: # check if it's time to continue or not
+            self.counter += 1
+        elif not self.loaded: 
+            self.loaded = True
+            self.ud.cancel()
+
+        if self.counter > 100 and self.m1: # draw win message
+            self.m1 = False
+            self.add_widget( self.message2 )
+        elif self.counter > 200 and self.m2:
+            self.m2 = False
+            self.add_widget( self.message3 )
+
+
+
+    def on_touch_down(self, touch):
+        if self.loaded:
+            parent = self.parent
+            print('parent in GameOverWidget', parent)
+            parent.remove_widget( self )
+            parent.add_widget( Game() )
+
 
 class Game(Widget):
     def __init__(self, **kwargs):
@@ -81,14 +183,14 @@ class Game(Widget):
         #sx, sy = (self.width, self.height)
         #print('xx yy',sx, sy)
 
-        self.fire = Fire( scale=props.scale, pos=(-ww*1/4, wh/10), angle=5 )
+        self.fire = Fire( scale=props.scale, pos=(-ww*1/5, wh/10), angle=5 )
         self.add_widget( self.fire )
         #self.quit_to_menu = Button( text='back to menu', font_size=14 )
         #self.add_widget(self.quit_to_menu)
         #self.quit_to_menu.bind( on_press=self._on_quit )
 
         ##hat (ww*5/4, wh/10)
-        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*3/4, wh/10), angle=20)
+        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*5/4, wh/10), angle=20)
         #self.rect_hat = Round(pos=self.hat.center, size=self.hat.size)
         self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
         print('hat size', self.hat.size)
@@ -113,7 +215,7 @@ class Game(Widget):
         print('parent in _on_quit()', parent)
         parent.remove_widget( self )
         #parent.add_widget( MainMenu() )
-        parent.add_widget( GameOver() )
+        parent.add_widget( GameOver(scale=props.scale) )
         self.ud.cancel()
         self.music.stop()
 
@@ -122,7 +224,7 @@ class Game(Widget):
         print('parent in _on_quit()', parent)
         parent.remove_widget( self )
         #parent.add_widget( MainMenu() )
-        parent.add_widget( ScoreScreen(self.hat.win_time) )
+        parent.add_widget( ScoreScreen(time=self.hat.win_time, scale=props.scale) )
         self.ud.cancel()
         self.music.stop()
         #self.music.play()
@@ -221,102 +323,7 @@ class Game(Widget):
             # accept the up
             return True
 
-class ScoreScreen(Widget):
-    def __init__(self, time, **kwargs):
-        super().__init__(**kwargs)
-        self.background = Background( source = 'images/backgroundMAC.png', scale = props.scale )
-        self.add_widget( self.background )
-        self.message = Label(text="Congratulations Comrade!", pos = (50, 150) )
-        self.message2 = Label(text="You Win!", pos=(60, 100) )
-        self.message3 = Label(text="Completion time: {:03f}".format(time), pos=(70, 30) )
-        self.m1 = True
-        self.m2 = True
-        self.m3 = True
-        
-        #self.add_widget( self.message )
-        #self.add_widget( self.message2 )
-        
-        self.counter = 0
-        self.loaded = False
-        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
-        
-    def update(self, dt):
-        print(self.counter)
-        if self.counter < 300: # check if it's time to continue or not
-            self.counter += 1
-        elif not self.loaded: 
-            self.loaded = True
-            self.ud.cancel()
 
-        if self.counter > 50 and self.m1: # draw win message
-            self.m1 = False
-            self.add_widget( self.message )
-        elif self.counter > 120 and self.m2:
-            self.m2 = False
-            self.add_widget( self.message2 )
-        elif self.counter > 200 and self.m3:
-            self.m3 = False
-            self.add_widget( self.message3 )
-
-
-    def on_touch_down(self, touch):
-        if self.loaded:
-            parent = self.parent
-            print('parent in GameOverWidget', parent)
-            parent.remove_widget( self )
-            parent.add_widget( Game() )
-
-#elf.background = Background( source = 'images/backgroundMAC.png', scale=props.scale )
-
-class GameOver(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.background = Background( source = 'images/backgroundMAC.png', scale=props.scale )
-        self.message = Label(text="I'm sorry.", pos=(50, 80) )
-        self.message2 = Label(text="You're a rasict.", pos=(75, 55) )
-        self.message3 = Label(text="Game Over.", pos=(80, 30) )
-
-        self.add_widget( self.background )
-        self.add_widget( self.message )
-        #self.add_widget( self.message2 )
-        
-        self.m1 = True
-        self.m2 = True
-        self.counter = 0
-
-        self.loaded = False
-        self.ud = Clock.schedule_interval(self.update, 1.0/60.0)
-        #return self
-        
-    def update(self, dt):
-        #print(self.counter)
-        #if self.counter < 100:
-        #    self.counter += 1
-        #elif not self.loaded:
-        #    self.loaded = True
-        #    self.ud.cancel()
-        print(self.counter)
-        if self.counter < 300: # check if it's time to continue or not
-            self.counter += 1
-        elif not self.loaded: 
-            self.loaded = True
-            self.ud.cancel()
-
-        if self.counter > 100 and self.m1: # draw win message
-            self.m1 = False
-            self.add_widget( self.message2 )
-        elif self.counter > 200 and self.m2:
-            self.m2 = False
-            self.add_widget( self.message3 )
-
-
-
-    def on_touch_down(self, touch):
-        if self.loaded:
-            parent = self.parent
-            print('parent in GameOverWidget', parent)
-            parent.remove_widget( self )
-            parent.add_widget( Game() )
 
 
 class MainMenu(Widget):
