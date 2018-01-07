@@ -26,7 +26,9 @@ class Man(Sprite):
         ksl = 'manleft-left manleft-mid manleft-right manleft-mid'.split()
         self.walk = [self.images[k] for k in ks]
         self.walk_left = [self.images[k] for k in ksl]
-        self.footstep = SoundLoader.load('audio/Footstep.wav')
+        #self.footstep = SoundLoader.load('audio/Footstep.wav')
+        self.fskeys = 'footstep-0.wav footstep-1.wav footstep-2.wav footstep-3.wav'.split()
+        self.footstep = SoundLoader.load('audio/footstep-0.wav')
         #print([x for x in self.walk])
         #fp = self.images['man-left'].flip_horizontal()
         ### set animation based on veloicity params instead

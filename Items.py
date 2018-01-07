@@ -4,6 +4,7 @@ from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.atlas import Atlas
 from Sprite import Sprite
+from kivy.core.audio import SoundLoader
 
 class Fire(Widget):
     def __init__(self, scale, pos, angle):
@@ -67,6 +68,7 @@ class Hat(Widget):
         self.add_widget( self.image )
         self.inhand = False
         self.onhead = False
+        self.onhead_timer = 0
         self.moving = False
         #burning status
         self.burning = False
@@ -76,11 +78,14 @@ class Hat(Widget):
         self.animation_value = int(200/(len(self.kys)-1))
         print('animation value', self.animation_value)
         self.vy = 0
+        self.combust = SoundLoader.load('audio/combust-both.wav')
+
 
     def burn(self, time):
         if not self.burning:
             self.win_time = time
             self.burning = True
+            self.combust.play()
             print('win time:', self.win_time)
         #burn = 'images/hat_burn.png'
         #self.remove_widget(self.image)
@@ -114,9 +119,10 @@ class Hat(Widget):
         #self.image.pos = self.pos
 
     def update(self, ihat):
+        '''if ihat is non-zero, move the hat'''
         #print('hat pos',self.pos)
         #print('hat inhand:', self.inhand)
-        if ihat > 0:
+        if ihat > 0: #make one and use ihat as a multiplier
             if self.onhead or self.inhand:
                 self.x += 0.8*self.scale
             else:
@@ -126,11 +132,13 @@ class Hat(Widget):
                 self.x -= 0.8*self.scale
             else:
                 self.x += 1.2*self.scale
+
         if  (not self.inhand) and  (not self.onhead) and self.center[1] > Window.height/8 and (not self.moving):
             self.y -= self.scale + self.vy*self.scale
             self.vy += 0.4*self.scale
         else:
             self.vy = 0
+
         self.image.pos = self.pos #update hat position
         ## check if hat is on fire, if it is, start burn animation 
         if self.burning and self.burn_counter < 201-self.animation_value:
@@ -144,6 +152,9 @@ class Hat(Widget):
             self.burning = False
             self.burnt = True
             self.image.texture = self.images['hat_burnt-final']
+
+        if self.onhead:
+            self.onhead_timer += 1
 
         #elif self.burnt:
             #self.image.texture = self.images['hat_burnt-final']

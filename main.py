@@ -255,25 +255,25 @@ class Game(Widget):
         self.man.update()
         self.background.scroll(self.man.ihat)
         self.fire.update(self.man.ihat)
-        #if self.hat.inhand:
-        #    print('inhand', self.hat.inhand)
-        #else:
         self.hat.update(self.man.ihat)
         #self.rect_hat.pos = self.hat.pos
         #self.rect_hat.update()
         if self.hat.collide_point( *self.fire.center ) and not self.hat.burning:
             #print( 'hat is burning' )
             self.hat.burn(self.total_time)
+            
+    def endFunction(self, dt):
+        self.et += dt
 
-
-            #parent = self.parent
-            #parent.remove_widget( self )
-            #parent.add_widget( MainMenu() )
-            #parent.add_widget( GameOver() )
 
     def on_touch_down(self, touch):
         if self.hat.onhead:
-            self._on_quit()
+            print('hat timer', self.hat.onhead_timer)
+            if self.hat.onhead_timer > 200:
+                print('onhead long enough, and a touch "touch-down" event')
+                self.onhead_timer = 0 #needed?
+                self.onhead = False # needed?
+                self._on_quit()
             #self.messageScreen( GameOver, False )
         if self.hat.burnt:
             self._on_win()
@@ -286,7 +286,7 @@ class Game(Widget):
 
         if self.hat.collide_point(*touch.pos):
             #if self.hat.inhand:
-            if touch.is_double_tap:
+            if touch.is_double_tap and not self.hat.onhead:
                 print('Touch is a Dobule tap')
                 print(' - interval is', touch.double_tap_time)
                 print(' - distance between previous is', touch.double_tap_distance)
@@ -410,8 +410,5 @@ class props(object):
 
 
 if __name__ =='__main__':
-    #Window.size = (360, 540)
     props = props()
-    #sound1 = MultiSound('audio/sound1.wav', 4)
-    #sound2 = SoundLoader.load('audio/sound2.wav')
     WalkApp().run()
