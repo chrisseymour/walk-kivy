@@ -37,9 +37,9 @@ class Fire(Widget):
     def update(self, ihat):
         #print('hat pos',self.pos)
         if ihat > 0:
-            self.x -= self.scale
+            self.x -= 1.2*self.scale
         elif ihat < 0:
-            self.x += self.scale
+            self.x += 1.2*self.scale
         self.image.pos = self.pos
         
         if self.burn_counter%25 == 0:
@@ -56,11 +56,13 @@ class Hat(Widget):
         super().__init__(pos=pos)
         self.scale = scale
         self.images = Atlas('images/hat.atlas')  ## Atlas initialization
-        #self.kys = list( self.images.textures.keys() )  ## atlas keys into a list
+        self.keys = list( self.images.textures.keys() )  ## atlas keys into a list
+        print('keys in Hat',self.keys)
         self.kys = ( 'hat_burnt0', 'hat_burnt1', 'hat_burnt2', 'hat_burnt3', 
                 'hat_burnt4', 'hat_burnt-final')
         print('hat keys list', self.kys )
-        self.image = Sprite(source=source, scale=self.scale, pos=pos)
+        self.image = Sprite(texture=self.images['hat'], scale=self.scale, pos=pos)
+        #self.image = Sprite(source=source, scale=self.scale, pos=pos)
         self.size = self.image.size
         self.add_widget( self.image )
         self.inhand = False
@@ -73,6 +75,7 @@ class Hat(Widget):
         self.sprite = 0
         self.animation_value = int(200/(len(self.kys)-1))
         print('animation value', self.animation_value)
+        self.vy = 0
 
     def burn(self, time):
         if not self.burning:
@@ -95,13 +98,14 @@ class Hat(Widget):
         print('hat on head', self.onhead)
 
     def move(self, touch_pos, target_pos, lock_on=True):
+        '''drop the item in a spot, if it's within a certain range, stop it'''
         self.center = touch_pos
         a = sqrt(sum([x*x for x in self.center]))
         b = sqrt(sum([x*x for x in target_pos]))
-        print('a',a,'b',b)
-        print('abs(a-b)',abs(a-b))
+        print('a', a, 'b', b)
+        print('abs(a-b)', abs(a-b))
 
-        limit = 15
+        limit = 25
         if abs(a-b) < limit and lock_on:
             self.toHead( target_pos )
             
@@ -114,16 +118,19 @@ class Hat(Widget):
         #print('hat inhand:', self.inhand)
         if ihat > 0:
             if self.onhead or self.inhand:
-                self.x += 0.5*self.scale
+                self.x += 0.8*self.scale
             else:
-                self.x -= self.scale
+                self.x -= 1.2*self.scale
         elif ihat < 0:
             if self.onhead or self.inhand:
-                self.x -= 0.5*self.scale
+                self.x -= 0.8*self.scale
             else:
-                self.x += self.scale
+                self.x += 1.2*self.scale
         if  (not self.inhand) and  (not self.onhead) and self.center[1] > Window.height/8 and (not self.moving):
-            self.y -= self.scale
+            self.y -= self.scale + self.vy*self.scale
+            self.vy += 0.4*self.scale
+        else:
+            self.vy = 0
         self.image.pos = self.pos #update hat position
         ## check if hat is on fire, if it is, start burn animation 
         if self.burning and self.burn_counter < 201-self.animation_value:
