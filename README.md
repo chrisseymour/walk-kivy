@@ -16,4 +16,6 @@ idefault is 250, changed to 300
 
 python -m kivy.atlas fire 500x500 src/fire/fire-0*
 python -m kivy.atlas man 1100x405 src/man/man*
-print(' - interval is', touch.double tap time)
+python -m kivy.atlas background 1602x1926 src/background/*.png
+
+#print(' - interval is', touch.double tap time)

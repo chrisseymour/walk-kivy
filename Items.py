@@ -48,7 +48,7 @@ class Fire(Widget):
             if self.sprite >= len(self.keys):
                 self.sprite = 0
             self.image.texture = self.images[ self.keys[self.sprite] ]
-            print('fire burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
+            #print('fire burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
         self.burn_counter += 1
 
 

@@ -14,6 +14,7 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.atlas import Atlas
 from kivy.core.audio import SoundLoader
+from kivy.graphics import Color
 # text
 from kivy.uix.label import Label
 
@@ -33,8 +34,8 @@ from Man import Man
 
 #set Window.size
 from kivy.config import Config
-Config.set('graphics', 'width', '340')
-Config.set('graphics', 'heigt', '600')
+Config.set('graphics', 'width', '360')
+Config.set('graphics', 'heigt', '640')
 #Config.set('graphics', 'position', 'custom')
 #Config.set('graphics', 'left', '300')
 #Config.set('graphics', 'top', '300')
@@ -113,7 +114,8 @@ class ScoreScreen(Widget):
             print('parent in GameOverWidget', parent)
             parent.remove_widget( self )
             self.music.stop()
-            parent.add_widget( Game() )
+            #parent.add_widget( Game() )
+            parent.add_widget( MainMenu() )
 
 
 class GameOver(Widget):
@@ -169,6 +171,7 @@ class GameOver(Widget):
             print('parent in GameOverWidget', parent)
             parent.remove_widget( self )
             self.music.stop()
+            #parent.add_widget( MainMenu() )
             parent.add_widget( Game() )
 
 
@@ -183,21 +186,21 @@ class Game(Widget):
         self.background = Background(source= 'images/backgroundMAC.png', scale=props.scale )
         self.add_widget(self.background)
 
-        ww, wh = Window.size
-        #print('window size',ww, wh)
-        #sw, sh = self.size
-        #print('self size',ww, wh)
-        #sx, sy = (self.width, self.height)
-        #print('xx yy',sx, sy)
+        self.ww, self.wh = Window.size
+        print('window size in main', self.ww, self.wh)
 
-        self.fire = Fire( scale=props.scale, pos=(-ww*1/5, wh/10), angle=5 )
+        ##man
+        self.man = Man( props.scale, (self.ww/2, self.wh*2/5) )
+        self.add_widget( self.man )
+
+        self.fire = Fire( scale=props.scale, pos=(-self.ww*1/5, self.wh/10), angle=5 )
         self.add_widget( self.fire )
         #self.quit_to_menu = Button( text='back to menu', font_size=14 )
         #self.add_widget(self.quit_to_menu)
         #self.quit_to_menu.bind( on_press=self._on_quit )
 
         ##hat (ww*5/4, wh/10)
-        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(ww*5/4, wh/10), angle=20)
+        self.hat = Hat(source='images/hat.png', scale=props.scale, pos=(self.ww*5/4, self.wh/10), angle=20)
         #self.rect_hat = Round(pos=self.hat.center, size=self.hat.size)
         self.rect_hat = Box(pos=self.hat.pos, size=self.hat.size)
         print('hat size', self.hat.size)
@@ -205,9 +208,6 @@ class Game(Widget):
         self.add_widget( self.hat )
 
 
-        ##man
-        self.man = Man( props.scale, (ww/2, wh/2) )
-        self.add_widget( self.man )
 
         #self.man_rect = Rectangle( pos=self.man.pos, size= self.man.size )
         #self.add_widget( self.man_rect )
@@ -221,7 +221,6 @@ class Game(Widget):
         parent = self.parent
         print('parent in _on_quit()', parent)
         parent.remove_widget( self )
-        #parent.add_widget( MainMenu() )
         parent.add_widget( GameOver(scale=props.scale) )
         self.ud.cancel()
         self.music.stop()
@@ -230,7 +229,6 @@ class Game(Widget):
         parent = self.parent
         print('parent in _on_quit()', parent)
         parent.remove_widget( self )
-        #parent.add_widget( MainMenu() )
         parent.add_widget( ScoreScreen(time=self.hat.win_time, scale=props.scale) )
         self.ud.cancel()
         self.music.stop()
@@ -240,7 +238,6 @@ class Game(Widget):
         parent = self.parent
         print('parent in messageScreen()', parent)
         parent.remove_widget( self )
-        #parent.add_widget( MainMenu() )
         #parent.add_widget( ScoreScreen(self.hat.win_time) )
         print(args)
         parent.add_widget( f() )
@@ -269,7 +266,7 @@ class Game(Widget):
     def on_touch_down(self, touch):
         if self.hat.onhead:
             print('hat timer', self.hat.onhead_timer)
-            if self.hat.onhead_timer > 200:
+            if self.hat.onhead_timer > 120:
                 print('onhead long enough, and a touch "touch-down" event')
                 self.onhead_timer = 0 #needed?
                 self.onhead = False # needed?
@@ -278,7 +275,7 @@ class Game(Widget):
         if self.hat.burnt:
             self._on_win()
         print(touch.profile)
-        print('touch pos',touch.pos)
+        #print('touch pos',touch.pos)
                 #if 5 < touch.pos[0] < 95:
         edge = 20#self.man.width/2
             #if self.hat.collide_point(*touch.pos):
@@ -302,7 +299,7 @@ class Game(Widget):
         elif edge < touch.pos[0] < Window.width-edge:
             self.man.move(touch.pos)
             print('touch out of hat')
-            print('touch pos', touch.pos)
+            #print('touch pos', touch.pos)
 
         else:
             print('touch out of bounds')
@@ -335,12 +332,24 @@ class Game(Widget):
 
 class MainMenu(Widget):
     def __init__(self, **kwargs):
-        super(MainMenu, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         #self.add_widget(Sprite(source='images/background.png'))
-        self.background = Sprite( source='images/background2.png', scale=props.scale )
+        self.background = Sprite( source='data/presplash.png', scale=props.scale )
+        self.background.center = Window.center
         self.add_widget(self.background)
+        #self.music = SoundLoader.load('audio/testsong.xm')
         self.music = SoundLoader.load('audio/song1.wav')
         self.music.play()
+        self.welcome_text = Label(text='Welcome to America.', pos=(Window.width/3, Window.height/2),
+                                  font_size='20sp', color=(0.1, 0.1, 0.1, 1))
+        self.start_text = Label(text='touch anywhere to start', pos=(Window.width/3, Window.height/3),
+                                font_size='20sp', color=(0.1, 0.1, 0.1, 1))
+        self.add_widget(self.welcome_text)
+        self.add_widget(self.start_text)
+        self.high_score = 0 # link to google cloud (propbably using java calls)
+        self.start_text = Label(text='High Score: {}'.format(self.high_score), pos=(Window.width/3, Window.height/5),
+                                font_size='18sp', color=(0.1, 0.1, 0.1, 1))
+        #self.music.volume = 0.1
         #self.size = self.children[0].size
         #self.start_button = Button(text='Start', pos=(10*props.scale, 0), font_size=14)
         #self.start_button.size = [s for s in self.size]
@@ -353,9 +362,9 @@ class MainMenu(Widget):
     def _on_start(self, *ignore):
         print('start!')
         parent = self.parent
+        self.music.stop()
         parent.remove_widget(self)
         parent.add_widget( Game() )
-        self.music.stop()
 
     def _on_options(self, *ignore):
         print('options')
@@ -364,17 +373,17 @@ class MainMenu(Widget):
         parent.add_widget( Options() )
 
 
-#    def on_touch_down(self, *ignore):
-#        parent = self.parnet
-#        parent.remove_widget(self)
-#        parent.add_widget(Game())
+
+    def on_touch_down(self, *ignore):
+        self._on_start()
 
 
 class WalkApp(App):
     def build(self):
 #        props.init()
         top = Widget()
-        top.add_widget(Game())
+        top.add_widget(MainMenu())
+        #top.add_widget(Game())
         xxx = top.children[0]
         print('xxxxx', xxx.parent)
 
@@ -388,14 +397,16 @@ class props(object):
     '''screen properties and background
         scaling factors'''
     def __init__(self):
-        self.bg_width, self.bg_height = 360, 540
+        #self.bg_width, self.bg_height = 360, 540
+        self.bg_width, self.bg_height = 360, 640
         self.width, self.height = Window.size
         print('props dim', self.width, self.height)
         self.center = Window.center
         ws = self.width / self.bg_width
         hs = self.height / self.bg_height
         self.scale = min(ws, hs)
-        print('window scale', self.scale)
+        #self.scale = #min(ws, hs)
+        print('new window scale', self.scale)
         print('window size', min(ws,hs), ws, hs)
         Logger.info('size={}; dpi={}, density={}, scale={}'.format(Window.size, Metrics.dpi, Metrics.density, self.scale) )
         '''

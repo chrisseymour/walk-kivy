@@ -14,7 +14,7 @@ class Sprite(Image):
         #self.texture.mag_filter = 'nearest'
         w, h = self.texture_size
         self.size = (scale * w, scale * h)
-        #print('size',self.size)
+        print('size before {}\nsize after {}'.format( (w,h), self.size))
 
 
 class Background(Widget):
@@ -28,8 +28,9 @@ class Background(Widget):
         self.keys = ('top', 'back', 'mid')
         print('bg keys', self.keys)
         self.scale = scale
-        self.size = (1600, 640) #self.image.size
+        self.size = (self.scale*1600, self.scale*640) #self.image.size
         x0 = -self.width/2
+        print('x0 in Background is', x0)
         print('initial x position', x0)
         self.image_bot = Sprite( texture=self.images['back'], scale=self.scale, x=x0 )
         self.add_widget(self.image_bot)

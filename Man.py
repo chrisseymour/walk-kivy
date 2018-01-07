@@ -13,12 +13,17 @@ class Man(Sprite):
         #self.images = SpriteAtlas('images/man.atlas')
         self.images = Atlas('images/man.atlas')
         self.scale = scale
-        w, h = pos[0]+self.images['man-stop'].width/2, pos[1]-self.images['man-stop'].height/2
-        w, h = self.width/2, self.height/2
-        print('man init', pos, w, h)
+        print('pos in', pos)
+        #w, h = pos[0]-self.images['man-stop'].width/2, pos[1]-self.images['man-stop'].height/2
+        #w, h = self.width/2, self.height/2
+        #print('man init', pos, w, h)
         #w, h, = pos[0]-w/2, pos[1]-h/2
-        print('man init', pos, w, h)
-        super().__init__(texture=self.images['man-stop'], scale=self.scale, pos=(w,h) )
+        print('window size {}, {}'.format( *Window.size) )
+        #print('pos*2 size {}, {}'.format( *pos) )
+        super().__init__(texture=self.images['man-stop'], scale=self.scale)#, center=pos )
+        self.center = pos
+        #super().__init__(texture=self.images['man-stop'], scale=self.scale, center=pos )
+        print('self pos in Man', self.center)
 
         self.keys = list(  self.images.textures.keys( ) )
 
@@ -100,8 +105,9 @@ class Man(Sprite):
 
 
     def update(self):
+        #print('current pos', self.pos)
         if self.moving is True:
-            print('x', self.x)
+            #print('x', self.x)
             #print('man.counter', self.counter)
             if self.ihat > 0 and self.center[0]<self.finalpos[0]:# and self.right < Window.width-20:
                 self.x += 0.7 * self.scale
