@@ -13,7 +13,8 @@ from kivy.uix.button import Button
 # graphics and sound
 from kivy.uix.image import Image
 from kivy.atlas import Atlas
-from kivy.core.audio import SoundLoader
+from kivy.core.audio import Sound, SoundLoader
+from kivy.core.audio.audio_gstplayer import SoundGstplayer
 from kivy.graphics import Color
 # text
 from kivy.uix.label import Label
@@ -180,6 +181,7 @@ class Game(Widget):
         print('info here', self.parent )
         super().__init__()
         print('info here', self.parent )
+        #self.music = SoundLoader.load('audio/indeed_vol1.mp3')
         self.music = SoundLoader.load('audio/indeed_vol1.wav')
         #self.music = SoundLoader.load('audio/walk-music-1.wav')
         self.music.play()
@@ -232,7 +234,6 @@ class Game(Widget):
         parent.add_widget( ScoreScreen(time=self.hat.win_time, scale=props.scale) )
         self.ud.cancel()
         self.music.stop()
-        #self.music.play()
 
     def messageScreen(self, f, args):
         parent = self.parent
@@ -242,7 +243,7 @@ class Game(Widget):
         print(args)
         parent.add_widget( f() )
         self.ud.cancel()
-        self.music.stop()
+        #self.music.stop()
          
 
 
@@ -333,12 +334,15 @@ class Game(Widget):
 class MainMenu(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        #self.add_widget(Sprite(source='images/background.png'))
+       # self.add_widget(Sprite(source='images/background.png'))
         self.background = Sprite( source='data/presplash.png', scale=props.scale )
         self.background.center = Window.center
         self.add_widget(self.background)
         #self.music = SoundLoader.load('audio/testsong.xm')
         self.music = SoundLoader.load('audio/song1.wav')
+        print('type', type(self.music) )
+        #self.gst = SoundGstplayer()
+        #self.music = SoundGstplayer.load(self.music_in)
         self.music.play()
         self.welcome_text = Label(text='Welcome to America.', pos=(Window.width/3, Window.height/2),
                                   font_size='20sp', color=(0.1, 0.1, 0.1, 1))

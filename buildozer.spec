@@ -13,7 +13,8 @@ package.domain = org.test
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,ttf,wav
+source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
+#flac,m4a
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -37,6 +38,7 @@ version = 0.1
 # (list) Application requirements
 # comma seperated e.g. requirements = sqlite3,kivy
 requirements = python3crystax, kivy
+#, gstreamer
 android.ndk_path = /home/chris/Downloads/crystax-ndk-10.3.2
 
 
