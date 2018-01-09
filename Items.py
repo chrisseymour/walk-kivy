@@ -124,12 +124,12 @@ class Hat(Widget):
         #print('hat inhand:', self.inhand)
         if ihat > 0: #make one and use ihat as a multiplier
             if self.onhead or self.inhand:
-                self.x += 0.8*self.scale
+                self.x += 0.7*self.scale
             else:
                 self.x -= 1.2*self.scale
         elif ihat < 0:
             if self.onhead or self.inhand:
-                self.x -= 0.8*self.scale
+                self.x -= 0.7*self.scale
             else:
                 self.x += 1.2*self.scale
 
@@ -146,7 +146,7 @@ class Hat(Widget):
                 self.sprite += 1
                 self.image.texture = self.images[ self.kys[self.sprite] ]
             self.burn_counter += 1
-            print('hat burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
+            #print('hat burn counter {}, sprite {}'.format(self.burn_counter, self.sprite) )
         elif self.burning and not self.burnt: ## if done burning, change status of hat
             print('burnt')
             self.burning = False

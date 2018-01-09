@@ -14,7 +14,7 @@ from kivy.uix.button import Button
 from kivy.uix.image import Image
 from kivy.atlas import Atlas
 from kivy.core.audio import Sound, SoundLoader
-from kivy.core.audio.audio_gstplayer import SoundGstplayer
+#from kivy.core.audio.audio_gstplayer import SoundGstplayer
 from kivy.graphics import Color
 # text
 from kivy.uix.label import Label
@@ -65,19 +65,21 @@ class MultiSound(object):
 
 
 #footsteps = MultiSound(file = 'audio/footstep.wav', n=3)
-footstep = SoundLoader.load('audio/Footstep.wav')
+#footstep = SoundLoader.load('audio/Footstep.wav')
 
 class ScoreScreen(Widget):
     def __init__(self, time, scale, **kwargs):
         super().__init__(**kwargs)
+        self.wintime = time
         self.background = Background( source = 'images/backgroundMAC.png', scale = scale )
         self.add_widget( self.background )
         x, y = Window.size
         print('window size in Score Screen', x, y)
         self.message = Label(text="Congratulations Comrade!", pos = (x/4, y/2) )
         self.message2 = Label(text="You Win!", pos=(x/4, y/3), font_size='20sp' )
-        self.message3 = Label(text="Completion time: {:03f}".format(time), pos=(x/3, y/5) )
-        self.music = SoundLoader.load('audio/win_loop.wav')
+        self.message3 = Label(text="Completion time: {:03f}".format(self.wintime), pos=(x/3, y/5) )
+        #self.music = SoundLoader.load('audio/win_loop.wav')
+        self.music = SoundLoader.load('audio/win_loop.mp3')
         self.music.play()
         self.m1 = True
         self.m2 = True
@@ -116,7 +118,7 @@ class ScoreScreen(Widget):
             parent.remove_widget( self )
             self.music.stop()
             #parent.add_widget( Game() )
-            parent.add_widget( MainMenu() )
+            parent.add_widget( MainMenu(self.wintime) )
 
 
 class GameOver(Widget):
@@ -128,7 +130,8 @@ class GameOver(Widget):
         self.message = Label(text="I'm sorry.", pos=(x/4, y/3) )
         self.message2 = Label(text="You're a rasict.", pos=(x/4, y/4), font_size='20sp' )
         self.message3 = Label(text="Game Over.", pos=(x/3, y/5) )
-        self.music = SoundLoader.load('audio/beat1.wav')
+        self.music = SoundLoader.load('audio/beat1.mp3')
+        #self.music = SoundLoader.load('audio/beat1.wav')
         self.music.play()
 
         self.add_widget( self.background )
@@ -181,9 +184,8 @@ class Game(Widget):
         print('info here', self.parent )
         super().__init__()
         print('info here', self.parent )
-        #self.music = SoundLoader.load('audio/indeed_vol1.mp3')
-        self.music = SoundLoader.load('audio/indeed_vol1.wav')
-        #self.music = SoundLoader.load('audio/walk-music-1.wav')
+        self.music = SoundLoader.load('audio/indeed_vol1.mp3')
+        #self.music = SoundLoader.load('audio/indeed_vol1.wav')
         self.music.play()
         self.background = Background(source= 'images/backgroundMAC.png', scale=props.scale )
         self.add_widget(self.background)
@@ -332,27 +334,39 @@ class Game(Widget):
 
 
 class MainMenu(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, highscore=0):
+        super().__init__()
        # self.add_widget(Sprite(source='images/background.png'))
         self.background = Sprite( source='data/presplash.png', scale=props.scale )
         self.background.center = Window.center
         self.add_widget(self.background)
         #self.music = SoundLoader.load('audio/testsong.xm')
-        self.music = SoundLoader.load('audio/song1.wav')
+        #self.music = SoundLoader.load('audio/song1.wav')
+        self.music = SoundLoader.load('audio/song1.mp3')
+        #self.music = SoundLoader.load('audio/song1.ogg')
+        #print('sound source', self.music.source)
         print('type', type(self.music) )
         #self.gst = SoundGstplayer()
         #self.music = SoundGstplayer.load(self.music_in)
         self.music.play()
         self.welcome_text = Label(text='Welcome to America.', pos=(Window.width/3, Window.height/2),
-                                  font_size='20sp', color=(0.1, 0.1, 0.1, 1))
+                                  #font_size='20sp', color=(0.1, 0.1, 0.1, 1))
+                                  font_size=Window.height/18, color=(0.1, 0.1, 0.1, 1))
         self.start_text = Label(text='touch anywhere to start', pos=(Window.width/3, Window.height/3),
-                                font_size='20sp', color=(0.1, 0.1, 0.1, 1))
+                                #font_size='20sp', color=(0.1, 0.1, 0.1, 1))
+                                font_size=Window.height/20, color=(0.1, 0.1, 0.1, 1))
         self.add_widget(self.welcome_text)
         self.add_widget(self.start_text)
-        self.high_score = 0 # link to google cloud (propbably using java calls)
-        self.start_text = Label(text='High Score: {}'.format(self.high_score), pos=(Window.width/3, Window.height/5),
-                                font_size='18sp', color=(0.1, 0.1, 0.1, 1))
+        self.old_highscore = 0
+        if highscore != 0:
+            print('high score', highscore)
+            if highscore > self.old_highscore:
+                self.highscore = highscore # link to google cloud (propbably using java calls)
+                print('high score', self.highscore)
+            #create the high score widget    
+            self.hs_text = Label(text='High Score: {:02f}'.format(self.highscore), \
+                        pos=(Window.width/3, Window.height/5), font_size='18sp', color=(0.1, 0.1, 0.1, 1))
+            self.add_widget(self.hs_text)
         #self.music.volume = 0.1
         #self.size = self.children[0].size
         #self.start_button = Button(text='Start', pos=(10*props.scale, 0), font_size=14)
